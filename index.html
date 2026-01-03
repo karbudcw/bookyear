@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -66,7 +65,7 @@
 </head>
 <body>
   <div id="app"></div>
-
+  
   <script>
     let books = [];
     let currentView = 'list';
@@ -343,27 +342,23 @@
             <div class="form-group">
               <label>Review</label>
               <textarea rows="5" oninput="updateForm('review', this.value)">${formData.review}</textarea>
-
-```
+            </div>
+            
+            <button class="btn" onclick="saveBook()" style="width: 100%;">
+              ${saving ? 'Saving...' : (editingBook ? 'Save Changes' : 'Add Book')}
+            </button>
+          </div>
         </div>
-        
-        <button class="btn" onclick="saveBook()" style="width: 100%;">
-          ${saving ? 'Saving...' : (editingBook ? 'Save Changes' : 'Add Book')}
-        </button>
-      </div>
-    </div>
-  `;
-}
+      `;
+    }
 
-function render() {
-  const app = document.getElementById('app');
-  app.innerHTML = currentView === 'list' ? renderList() : renderEdit();
-}
+    function render() {
+      const app = document.getElementById('app');
+      app.innerHTML = currentView === 'list' ? renderList() : renderEdit();
+    }
 
-// Initialize
-loadBooks();
-```
-
+    // Initialize
+    loadBooks();
   </script>
 </body>
 </html>
