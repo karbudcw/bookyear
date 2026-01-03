@@ -1,45 +1,42 @@
-import { getStore } from “@netlify/blobs”;
+import { getStore } from "@netlify/blobs";
 
 export default async (req, context) => {
-const store = getStore(“books”);
-const headers = {
-“Content-Type”: “application/json”,
-“Access-Control-Allow-Origin”: “*”,
-“Access-Control-Allow-Methods”: “GET, POST, OPTIONS”,
-“Access-Control-Allow-Headers”: “Content-Type”
-};
+  const store = getStore("books");
+  const headers = {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type"
+  };
 
-if (req.method === “OPTIONS”) {
-return new Response(null, { status: 200, headers });
-}
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 200, headers });
+  }
 
-try {
-if (req.method === “GET”) {
-const data = await store.get(“library”, { type: “json” });
-return new Response(JSON.stringify(data || { books: [] }), { headers });
-}
+  try {
+    if (req.method === "GET") {
+      const data = await store.get("library", { type: "json" });
+      return new Response(JSON.stringify(data || { books: [] }), { headers });
+    }
 
-```
-if (req.method === "POST") {
-  const body = await req.json();
-  await store.setJSON("library", body);
-  return new Response(JSON.stringify({ success: true }), { headers });
-}
+    if (req.method === "POST") {
+      const body = await req.json();
+      await store.setJSON("library", body);
+      return new Response(JSON.stringify({ success: true }), { headers });
+    }
 
-return new Response(JSON.stringify({ error: "Method not allowed" }), {
-  status: 405,
-  headers
-});
-```
-
-} catch (error) {
-return new Response(JSON.stringify({ error: error.message }), {
-status: 500,
-headers
-});
-}
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers
+    });
+  }
 };
 
 export const config = {
-path: “/api/books”
+  path: "/api/books"
 };
