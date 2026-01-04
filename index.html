@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>A Book Year</title>
+  <title>Book Years</title>
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -197,7 +197,7 @@
 
       let html = `
         <header>
-          <h1>A Book Year</h1>
+          <h1>A Book Years</h1>
           <p class="subtitle">${books.length} books</p>
           <nav>
             ${years.map(y => `<button class="${yearFilter === y ? 'active' : ''}" onclick="setYear('${y}')">${y === 'all' ? 'All' : y === 'rankings' ? '🏆 Rankings' : y}</button>`).join('')}
