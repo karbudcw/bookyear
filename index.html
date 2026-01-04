@@ -197,7 +197,7 @@
 
       let html = `
         <header>
-          <h1>A Book Years</h1>
+          <h1>Book Years</h1>
           <p class="subtitle">${books.length} books</p>
           <nav>
             ${years.map(y => `<button class="${yearFilter === y ? 'active' : ''}" onclick="setYear('${y}')">${y === 'all' ? 'All' : y === 'rankings' ? '🏆 Rankings' : y}</button>`).join('')}
