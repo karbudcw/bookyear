@@ -1,12 +1,14 @@
 import { getStore } from "@netlify/blobs";
 
+const ADMIN_KEY = 'CV!vxUCQvr*p47xNX@ZB';
+
 export default async (req, context) => {
   const store = getStore("books");
   const headers = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type"
+    "Access-Control-Allow-Headers": "Content-Type, Authorization"
   };
 
   if (req.method === "OPTIONS") {
@@ -20,6 +22,17 @@ export default async (req, context) => {
     }
 
     if (req.method === "POST") {
+      // Verify admin authorization
+      const authHeader = req.headers.get("Authorization");
+      const token = authHeader?.replace("Bearer ", "");
+      
+      if (token !== ADMIN_KEY) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers
+        });
+      }
+
       const body = await req.json();
       await store.setJSON("library", body);
       return new Response(JSON.stringify({ success: true }), { headers });
