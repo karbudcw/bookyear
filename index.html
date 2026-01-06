@@ -110,12 +110,18 @@
         const res = await fetch('/api/books');
         const data = await res.json();
         books = data.books || [];
+        console.log('Loaded books:', books.length);
+        console.log('Sample book with pageCount:', books.find(b => b.pageCount));
+        const totalPages = books.reduce((sum, b) => sum + (b.pageCount || 0), 0);
+        console.log('Total pages:', totalPages);
       } catch (e) { books = []; }
       loading = false;
       render();
     }
 
     async function saveBooks() {
+      console.log('Saving books:', books.length, 'books');
+      console.log('Sample book with pageCount:', books.find(b => b.pageCount));
       try {
         await fetch('/api/books', {
           method: 'POST',
@@ -125,6 +131,7 @@
           },
           body: JSON.stringify({ books })
         });
+        console.log('Save successful');
       } catch (e) { console.error('Save failed:', e); }
       render();
     }
@@ -180,10 +187,17 @@
       const rating = ratingValue !== '' ? parseInt(ratingValue) : null;
       const pageCount = pageCountValue !== '' ? parseInt(pageCountValue) : null;
       
+      const bookData = {
+        ...form,
+        year: parseInt(form.year) || null,
+        rating,
+        pageCount
+      };
+      
       if (editingBook) {
-        books = books.map(b => b.id === editingBook.id ? { ...form, id: b.id, year: parseInt(form.year) || null, rating, pageCount } : b);
+        books = books.map(b => b.id === editingBook.id ? { ...b, ...bookData } : b);
       } else {
-        books.push({ ...form, id: Date.now(), year: parseInt(form.year) || null, rating, pageCount });
+        books.push({ ...bookData, id: Date.now() });
       }
       saveBooks();
       view = 'list';
