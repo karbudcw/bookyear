@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Book Year</title>
+  <title>Pages Turned</title>
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -15,9 +15,9 @@
     nav { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
     nav button { background: none; border: 1px solid #ddd; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 14px; font-family: inherit; transition: all 0.2s; }
     nav button:hover { border-color: #999; }
-    nav button.active { background: #2d2d2d; color: #fff; border-color: #2d2d2d; }
-    .btn { padding: 10px 20px; background: #2d2d2d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-family: inherit; }
-    .btn:hover { background: #444; }
+    nav button.active { background: #2D3E50; color: #fff; border-color: #2D3E50; }
+    .btn { padding: 10px 20px; background: #2D3E50; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-family: inherit; }
+    .btn:hover { background: #3d5166; }
     .btn-secondary { background: #f5f5f5; color: #2d2d2d; border: 1px solid #ddd; }
     .btn-secondary:hover { background: #eee; }
     .btn-danger { background: #fff; color: #c44; border: 1px solid #ddd; }
@@ -33,12 +33,7 @@
     .book-cover img { width: 100%; height: 100%; object-fit: cover; }
     .book-info { flex: 1; min-width: 0; }
     .book-title { font-family: 'Libre Baskerville', serif; font-size: 1rem; margin-bottom: 4px; }
-    .book-title a { color: inherit; text-decoration: none; }
-    .book-title a:hover { text-decoration: underline; }
-    .book-author { color: #666; font-size: 0.85rem; margin-bottom: 4px; }
-    .book-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-    .format-icon { font-size: 14px; }
-    .read-date { font-size: 12px; color: #999; }
+    .book-author { color: #666; font-size: 0.85rem; margin-bottom: 8px; }
     .book-review { font-size: 0.85rem; color: #555; margin-top: 8px; }
     .book-actions { display: flex; gap: 8px; align-items: flex-start; }
     .rating-circle { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0; }
@@ -56,37 +51,26 @@
     .import-section { margin-top: 24px; padding: 20px; background: #fff; border: 1px solid #e8e6e3; border-radius: 8px; }
     .import-section textarea { width: 100%; height: 150px; margin: 12px 0; }
     .book-rank { font-size: 14px; color: #999; margin-right: 12px; min-width: 30px; }
-    .format-select { display: flex; gap: 12px; }
-    .format-option { display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; transition: all 0.2s; }
-    .format-option:hover { border-color: #999; }
-    .format-option.selected { border-color: #2d2d2d; background: #f5f5f5; }
-    .format-option input { display: none; }
     @media (max-width: 600px) {
       .form-row { grid-template-columns: 1fr; }
       .stats { grid-template-columns: repeat(2, 1fr); }
       .book-actions { flex-direction: column; }
       nav { gap: 6px; }
       nav button { padding: 6px 12px; font-size: 13px; }
-      .format-select { flex-wrap: wrap; }
     }
   </style>
 </head>
 <body>
   <div id="app"><div class="loading">Loading...</div></div>
   <script>
-    const ADMIN_KEY = 'CV!vxUCQvr*p47xNX@ZB';
-    const CURRENT_YEAR = '2026';
-    
     let books = [];
     let view = 'list';
-    let yearFilter = 'current';
+    let yearFilter = 'all';
     let editingBook = null;
+    let form = { title: '', author: '', year: '', cover: '', rating: null, review: '', dateRead: '', isbn: '' };
+    let isbnInput = '';
     let loading = true;
     let error = '';
-    
-    // Check for admin mode via URL parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    const isAdmin = urlParams.get('admin') === ADMIN_KEY;
 
     const getColor = r => {
       if (r === null) return '#ccc';
@@ -95,27 +79,6 @@
       if (r >= 50) return '#FFC107';
       if (r >= 30) return '#FF9800';
       return '#E53935';
-    };
-
-    const getFormatIcon = f => {
-      if (f === 'ebook') return '📱';
-      if (f === 'physical') return '📖';
-      if (f === 'audiobook') return '🎧';
-      return '';
-    };
-
-    const formatReadDate = d => {
-      if (!d) return '';
-      const date = new Date(d);
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const month = months[date.getMonth()];
-      const year = String(date.getFullYear()).slice(2);
-      return `Read ${month} ${year}`;
-    };
-
-    const escapeHtml = str => {
-      if (!str) return '';
-      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     };
 
     const getYear = d => d ? d.slice(0, 4) : 'Unknown';
@@ -138,48 +101,45 @@
 
     async function saveBooks() {
       try {
-        const headers = { 'Content-Type': 'application/json' };
-        if (isAdmin) {
-          headers['Authorization'] = `Bearer ${ADMIN_KEY}`;
-        }
-        const res = await fetch('/api/books', {
+        await fetch('/api/books', {
           method: 'POST',
-          headers,
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ books })
         });
-        if (!res.ok) {
-          const data = await res.json();
-          console.error('Save failed:', data.error);
-          alert('Save failed: ' + (data.error || 'Unknown error'));
-          return;
-        }
       } catch (e) { console.error('Save failed:', e); }
       render();
     }
 
     async function fetchISBN() {
-      const isbnInput = document.getElementById('isbnInput').value.trim();
-      if (!isbnInput) return;
+      if (!isbnInput.trim()) return;
       error = '';
       try {
-        const res = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbnInput}&format=json&jscmd=data`);
+        const res = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbnInput.trim()}&format=json&jscmd=data`);
         const data = await res.json();
-        const b = data[`ISBN:${isbnInput}`];
+        const b = data[`ISBN:${isbnInput.trim()}`];
         if (b) {
-          document.getElementById('titleInput').value = b.title || '';
-          document.getElementById('authorInput').value = b.authors?.[0]?.name || '';
-          document.getElementById('yearInput').value = b.publish_date?.match(/\d{4}/)?.[0] || '';
-          document.getElementById('coverInput').value = `https://covers.openlibrary.org/b/isbn/${isbnInput}-M.jpg`;
+          form.title = b.title || form.title;
+          form.author = b.authors?.[0]?.name || form.author;
+          form.year = b.publish_date?.match(/\d{4}/)?.[0] || form.year;
+          form.cover = `https://covers.openlibrary.org/b/isbn/${isbnInput.trim()}-M.jpg`;
+          form.isbn = isbnInput.trim();
         } else { error = 'Book not found.'; }
       } catch (e) { error = 'Failed to fetch.'; }
       render();
     }
 
-    function openAdd() { editingBook = null; view = 'edit'; error = ''; render(); }
+    function resetForm() {
+      form = { title: '', author: '', year: '', cover: '', rating: null, review: '', dateRead: '', isbn: '' };
+      isbnInput = '';
+      error = '';
+    }
+
+    function openAdd() { resetForm(); editingBook = null; view = 'edit'; render(); }
     function openEdit(book) {
+      form = { ...book, year: String(book.year || ''), rating: book.rating };
+      isbnInput = book.isbn || '';
       editingBook = book;
       view = 'edit';
-      error = '';
       render();
     }
     function deleteBook(id) {
@@ -188,37 +148,19 @@
         saveBooks();
       }
     }
-    
-    function getFormData() {
-      return {
-        title: document.getElementById('titleInput').value,
-        author: document.getElementById('authorInput').value,
-        year: parseInt(document.getElementById('yearInput').value) || null,
-        cover: document.getElementById('coverInput').value,
-        dateRead: document.getElementById('dateReadInput').value,
-        rating: document.getElementById('ratingInput').value === '' ? null : parseInt(document.getElementById('ratingInput').value),
-        format: document.querySelector('input[name="format"]:checked')?.value || '',
-        amazonUrl: document.getElementById('amazonUrlInput').value,
-        review: document.getElementById('reviewInput').value,
-        isbn: document.getElementById('isbnInput').value
-      };
-    }
-    
     function saveBook() {
-      const formData = getFormData();
-      if (!formData.title.trim()) { error = 'Title required'; render(); return; }
-      
+      if (!form.title.trim()) { error = 'Title required'; render(); return; }
+      const rating = form.rating === '' || form.rating === null ? null : parseInt(form.rating);
       if (editingBook) {
-        books = books.map(b => b.id === editingBook.id ? { ...formData, id: b.id } : b);
+        books = books.map(b => b.id === editingBook.id ? { ...form, id: b.id, year: parseInt(form.year) || null, rating } : b);
       } else {
-        books.push({ ...formData, id: Date.now() });
+        books.push({ ...form, id: Date.now(), year: parseInt(form.year) || null, rating });
       }
       saveBooks();
       view = 'list';
-      editingBook = null;
-      error = '';
+      resetForm();
     }
-    function goBack() { view = 'list'; editingBook = null; error = ''; render(); }
+    function goBack() { view = 'list'; resetForm(); render(); }
     function setYear(y) { yearFilter = y; render(); }
     function setView(v) { view = v; render(); }
 
@@ -235,93 +177,56 @@
 
     function ratingCircle(r) {
       const color = getColor(r);
-      const label = r === null ? '–' : r;
+      const label = r === null ? 'â€”' : r;
       const cls = r === null ? 'rating-circle rating-unrated' : 'rating-circle';
       return `<div class="${cls}" style="background:${color};box-shadow:0 3px 10px ${color}44">${label}</div>`;
     }
 
     function filterBooks() {
-      if (yearFilter === 'current') {
-        return books.filter(b => getYearGroup(b.dateRead) === CURRENT_YEAR).sort((a,b) => (b.rating||0) - (a.rating||0));
-      }
-      if (yearFilter === 'alltime') {
-        return [...books].filter(b => b.rating !== null).sort((a,b) => b.rating - a.rating);
-      }
+      if (yearFilter === 'all') return [...books].sort((a,b) => (b.rating||0) - (a.rating||0));
+      if (yearFilter === 'rankings') return [...books].filter(b => b.rating !== null).sort((a,b) => b.rating - a.rating);
       return books.filter(b => getYearGroup(b.dateRead) === yearFilter).sort((a,b) => (b.rating||0) - (a.rating||0));
-    }
-
-    function getStatsForFilter() {
-      let subset;
-      if (yearFilter === 'current') {
-        subset = books.filter(b => getYearGroup(b.dateRead) === CURRENT_YEAR);
-      } else if (yearFilter === 'alltime') {
-        subset = books;
-      } else {
-        subset = books.filter(b => getYearGroup(b.dateRead) === yearFilter);
-      }
-      const rated = subset.filter(b => b.rating !== null);
-      const avg = rated.length ? (rated.reduce((s,b) => s + b.rating, 0) / rated.length).toFixed(0) : '–';
-      const ninety = subset.filter(b => b.rating >= 90).length;
-      return { total: subset.length, rated: rated.length, avg, ninety };
-    }
-
-    function renderBookTitle(book) {
-      const title = escapeHtml(book.title);
-      if (book.amazonUrl) {
-        return `<a href="${escapeHtml(book.amazonUrl)}" target="_blank" rel="noopener noreferrer">${title}</a>`;
-      }
-      return title;
-    }
-
-    function renderBookMeta(book) {
-      const formatIcon = getFormatIcon(book.format);
-      const readDate = formatReadDate(book.dateRead);
-      if (!formatIcon && !readDate) return '';
-      return `<div class="book-meta">
-        ${formatIcon ? `<span class="format-icon">${formatIcon}</span>` : ''}
-        ${readDate ? `<span class="read-date">${readDate}</span>` : ''}
-      </div>`;
     }
 
     function renderList() {
       if (loading) return '<div class="loading">Loading...</div>';
-      const years = ['current', '2025', '2024', '2023', '2022', '2021', '2020', 'Older', 'alltime'];
+      const years = ['all', '2025', '2024', '2023', '2022', '2021', '2020', 'Older', 'rankings'];
       const filtered = filterBooks();
-      const stats = getStatsForFilter();
+      const rated = books.filter(b => b.rating !== null);
+      const avg = rated.length ? (rated.reduce((s,b) => s + b.rating, 0) / rated.length).toFixed(0) : 'â€”';
 
       let html = `
         <header>
-          <h1>My Book Year</h1>
+          <h1>Pages Turned</h1>
           <p class="subtitle">${books.length} books</p>
           <nav>
-            ${years.map(y => `<button class="${yearFilter === y ? 'active' : ''}" onclick="setYear('${y}')">${y === 'current' ? 'Current' : y === 'alltime' ? '🏆 All Time' : y}</button>`).join('')}
+            ${years.map(y => `<button class="${yearFilter === y ? 'active' : ''}" onclick="setYear('${y}')">${y === 'all' ? 'All' : y === 'rankings' ? 'ðŸ† Rankings' : y}</button>`).join('')}
           </nav>
         </header>
         <div class="container">
           <div class="top-bar">
             <div></div>
-            ${isAdmin ? `<div style="display:flex;gap:8px;">
+            <div style="display:flex;gap:8px;">
               <button class="btn btn-secondary" onclick="setView('import')">Import</button>
               <button class="btn" onclick="openAdd()">+ Add Book</button>
-            </div>` : ''}
+            </div>
           </div>
           <div class="card stats">
-            <div><div class="stat-number">${stats.total}</div><div class="stat-label">Books</div></div>
-            <div><div class="stat-number">${stats.rated}</div><div class="stat-label">Rated</div></div>
-            <div><div class="stat-number">${stats.avg}</div><div class="stat-label">Avg Rating</div></div>
-            <div><div class="stat-number">${stats.ninety}</div><div class="stat-label">90+ Books</div></div>
+            <div><div class="stat-number">${books.length}</div><div class="stat-label">Books</div></div>
+            <div><div class="stat-number">${rated.length}</div><div class="stat-label">Rated</div></div>
+            <div><div class="stat-number">${avg}</div><div class="stat-label">Avg Rating</div></div>
+            <div><div class="stat-number">${books.filter(b => b.rating >= 90).length}</div><div class="stat-label">90+ Books</div></div>
           </div>`;
 
-      if (yearFilter === 'alltime') {
+      if (yearFilter === 'rankings') {
         html += `<h2 class="section-title">All-Time Rankings</h2>`;
         filtered.forEach((book, i) => {
           html += `<div class="card book-card">
             <div class="book-rank">#${i + 1}</div>
-            <div class="book-cover">${book.cover ? `<img src="${escapeHtml(book.cover)}" onerror="this.parentElement.innerHTML=''">` : ''}</div>
+            <div class="book-cover">${book.cover ? `<img src="${book.cover}" onerror="this.parentElement.innerHTML=''">`  : ''}</div>
             <div class="book-info">
-              <div class="book-title">${renderBookTitle(book)}</div>
-              <p class="book-author">${escapeHtml(book.author) || ''}${book.year ? ` (${book.year})` : ''}</p>
-              ${renderBookMeta(book)}
+              <div class="book-title">${book.title}</div>
+              <p class="book-author">${book.author || ''}${book.year ? ` (${book.year})` : ''}</p>
             </div>
             ${ratingCircle(book.rating)}
           </div>`;
@@ -332,18 +237,17 @@
         } else {
           filtered.forEach(book => {
             html += `<div class="card book-card">
-              <div class="book-cover">${book.cover ? `<img src="${escapeHtml(book.cover)}" onerror="this.parentElement.innerHTML=''">` : ''}</div>
+              <div class="book-cover">${book.cover ? `<img src="${book.cover}" onerror="this.parentElement.innerHTML=''">`  : ''}</div>
               <div class="book-info">
-                <div class="book-title">${renderBookTitle(book)}</div>
-                <p class="book-author">${escapeHtml(book.author) || ''}${book.year ? ` (${book.year})` : ''}</p>
-                ${renderBookMeta(book)}
-                ${book.review ? `<p class="book-review">${escapeHtml(book.review)}</p>` : ''}
+                <div class="book-title">${book.title}</div>
+                <p class="book-author">${book.author || ''}${book.year ? ` (${book.year})` : ''}</p>
+                ${book.review ? `<p class="book-review">${book.review}</p>` : ''}
               </div>
               ${ratingCircle(book.rating)}
-              ${isAdmin ? `<div class="book-actions">
+              <div class="book-actions">
                 <button class="btn btn-secondary btn-small" onclick="openEdit(books.find(b=>b.id===${book.id}))">Edit</button>
                 <button class="btn btn-danger btn-small" onclick="deleteBook(${book.id})">Delete</button>
-              </div>` : ''}
+              </div>
             </div>`;
           });
         }
@@ -353,73 +257,52 @@
     }
 
     function renderEdit() {
-      const book = editingBook || {};
       return `
         <div class="container" style="padding-top:32px">
-          <button class="back-link" onclick="goBack()">← Back</button>
+          <button class="back-link" onclick="goBack()">â† Back</button>
           <h1 style="font-family:'Libre Baskerville',serif;font-size:1.4rem;font-weight:400;margin:20px 0">${editingBook ? 'Edit Book' : 'Add Book'}</h1>
           <div class="card">
             <div class="form-group">
               <label>Import from ISBN</label>
               <div style="display:flex;gap:8px">
-                <input type="text" id="isbnInput" value="${escapeHtml(book.isbn || '')}" placeholder="e.g. 9780593321201" style="flex:1">
+                <input type="text" value="${isbnInput}" oninput="isbnInput=this.value" placeholder="e.g. 9780593321201" style="flex:1">
                 <button class="btn" onclick="fetchISBN()">Fetch</button>
               </div>
               ${error ? `<p class="error">${error}</p>` : ''}
             </div>
             <hr style="border:none;border-top:1px solid #eee;margin:20px 0">
+            ${form.cover ? `<div style="text-align:center;margin-bottom:16px"><img src="${form.cover}" style="height:120px;border-radius:4px" onerror="this.style.display='none'"></div>` : ''}
             <div class="form-group">
               <label>Title *</label>
-              <input type="text" id="titleInput" value="${escapeHtml(book.title || '')}" style="width:100%">
+              <input type="text" value="${form.title}" oninput="form.title=this.value" style="width:100%">
             </div>
             <div class="form-row">
               <div class="form-group">
                 <label>Author</label>
-                <input type="text" id="authorInput" value="${escapeHtml(book.author || '')}" style="width:100%">
+                <input type="text" value="${form.author}" oninput="form.author=this.value" style="width:100%">
               </div>
               <div class="form-group">
                 <label>Year Published</label>
-                <input type="text" id="yearInput" value="${book.year || ''}" style="width:100%">
+                <input type="text" value="${form.year}" oninput="form.year=this.value" style="width:100%">
               </div>
             </div>
             <div class="form-group">
               <label>Cover URL</label>
-              <input type="text" id="coverInput" value="${escapeHtml(book.cover || '')}" placeholder="https://..." style="width:100%">
-            </div>
-            <div class="form-group">
-              <label>Amazon URL</label>
-              <input type="text" id="amazonUrlInput" value="${escapeHtml(book.amazonUrl || '')}" placeholder="https://amazon.com/..." style="width:100%">
+              <input type="text" value="${form.cover}" oninput="form.cover=this.value" placeholder="https://..." style="width:100%">
             </div>
             <div class="form-row">
               <div class="form-group">
                 <label>Date Read</label>
-                <input type="date" id="dateReadInput" value="${book.dateRead || ''}">
+                <input type="date" value="${form.dateRead}" oninput="form.dateRead=this.value">
               </div>
               <div class="form-group">
                 <label>Rating (1-100)</label>
-                <input type="number" id="ratingInput" min="1" max="100" value="${book.rating !== null && book.rating !== undefined ? book.rating : ''}" placeholder="Leave blank if unrated">
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Format</label>
-              <div class="format-select">
-                <label class="format-option ${book.format === 'ebook' ? 'selected' : ''}">
-                  <input type="radio" name="format" value="ebook" ${book.format === 'ebook' ? 'checked' : ''}>
-                  📱 eBook
-                </label>
-                <label class="format-option ${book.format === 'physical' ? 'selected' : ''}">
-                  <input type="radio" name="format" value="physical" ${book.format === 'physical' ? 'checked' : ''}>
-                  📖 Physical
-                </label>
-                <label class="format-option ${book.format === 'audiobook' ? 'selected' : ''}">
-                  <input type="radio" name="format" value="audiobook" ${book.format === 'audiobook' ? 'checked' : ''}>
-                  🎧 Audiobook
-                </label>
+                <input type="number" min="1" max="100" value="${form.rating || ''}" oninput="form.rating=this.value" placeholder="Leave blank if unrated">
               </div>
             </div>
             <div class="form-group">
               <label>Review</label>
-              <textarea id="reviewInput" rows="4" style="width:100%">${escapeHtml(book.review || '')}</textarea>
+              <textarea oninput="form.review=this.value" rows="4" style="width:100%">${form.review}</textarea>
             </div>
             <button class="btn" onclick="saveBook()" style="width:100%">${editingBook ? 'Save Changes' : 'Add Book'}</button>
           </div>
@@ -429,7 +312,7 @@
     function renderImport() {
       return `
         <div class="container" style="padding-top:32px">
-          <button class="back-link" onclick="setView('list')">← Back</button>
+          <button class="back-link" onclick="setView('list')">â† Back</button>
           <h1 style="font-family:'Libre Baskerville',serif;font-size:1.4rem;font-weight:400;margin:20px 0">Import Books</h1>
           <div class="card">
             <p style="margin-bottom:12px;color:#666">Paste your books JSON array below. This will replace all existing books.</p>
@@ -441,8 +324,8 @@
 
     function render() {
       const app = document.getElementById('app');
-      if (view === 'edit' && isAdmin) app.innerHTML = renderEdit();
-      else if (view === 'import' && isAdmin) app.innerHTML = renderImport();
+      if (view === 'edit') app.innerHTML = renderEdit();
+      else if (view === 'import') app.innerHTML = renderImport();
       else app.innerHTML = renderList();
     }
 
