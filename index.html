@@ -73,6 +73,14 @@
     let isbnInput = '';
     let loading = true;
     let error = '';
+    let isAdmin = false;
+
+    // Check for admin mode via URL parameter with password
+    const urlParams = new URLSearchParams(window.location.search);
+    const adminPassword = 'CV!vxUCQvr*p47xNX@ZB';
+    if (urlParams.get('admin') === adminPassword) {
+      isAdmin = true;
+    }
 
     const getColor = r => {
       if (r === null) return '#ccc';
@@ -111,7 +119,10 @@
       try {
         await fetch('/api/books', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'X-Admin-Password': adminPassword
+          },
           body: JSON.stringify({ books })
         });
       } catch (e) { console.error('Save failed:', e); }
@@ -223,8 +234,8 @@
         </header>
         <div class="container">
           <div class="top-bar">
-            <button class="btn btn-secondary btn-small" onclick="exportData()">📥 Backup Data</button>
-            <button class="btn" onclick="openAdd()">+ Add Book</button>
+            ${isAdmin ? '<button class="btn btn-secondary btn-small" onclick="exportData()">📥 Backup Data</button>' : '<div></div>'}
+            ${isAdmin ? '<button class="btn" onclick="openAdd()">+ Add Book</button>' : ''}
           </div>
           <div class="card stats">
             <div><div class="stat-number">${books.length}</div><div class="stat-label">Books</div></div>
@@ -260,10 +271,10 @@
                 ${book.review ? `<p class="book-review">${book.review}</p>` : ''}
               </div>
               ${ratingCircle(book.rating)}
-              <div class="book-actions">
+              ${isAdmin ? `<div class="book-actions">
                 <button class="btn btn-secondary btn-small" onclick="openEdit(books.find(b=>b.id===${book.id}))">Edit</button>
                 <button class="btn btn-danger btn-small" onclick="deleteBook(${book.id})">Delete</button>
-              </div>
+              </div>` : ''}
             </div>`;
           });
         }
