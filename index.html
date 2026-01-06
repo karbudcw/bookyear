@@ -10,16 +10,14 @@
     body { font-family: 'Inter', system-ui, sans-serif; background: #faf9f7; color: #2d2d2d; line-height: 1.6; }
     .container { max-width: 900px; margin: 0 auto; padding: 24px; }
     header { padding: 40px 24px 24px; text-align: center; border-bottom: 1px solid #e8e6e3; }
-    .logo { margin-bottom: 12px; }
-    .logo svg { height: 50px; width: auto; }
     h1 { font-family: 'Libre Baskerville', serif; font-size: 2rem; font-weight: 400; margin-bottom: 8px; }
     .subtitle { color: #666; font-size: 0.95rem; }
     nav { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
     nav button { background: none; border: 1px solid #ddd; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 14px; font-family: inherit; transition: all 0.2s; }
     nav button:hover { border-color: #999; }
-    nav button.active { background: #2D3E50; color: #fff; border-color: #2D3E50; }
-    .btn { padding: 10px 20px; background: #2D3E50; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-family: inherit; }
-    .btn:hover { background: #3d5166; }
+    nav button.active { background: #2d2d2d; color: #fff; border-color: #2d2d2d; }
+    .btn { padding: 10px 20px; background: #2d2d2d; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-family: inherit; }
+    .btn:hover { background: #444; }
     .btn-secondary { background: #f5f5f5; color: #2d2d2d; border: 1px solid #ddd; }
     .btn-secondary:hover { background: #eee; }
     .btn-danger { background: #fff; color: #c44; border: 1px solid #ddd; }
@@ -35,8 +33,12 @@
     .book-cover img { width: 100%; height: 100%; object-fit: cover; }
     .book-info { flex: 1; min-width: 0; }
     .book-title { font-family: 'Libre Baskerville', serif; font-size: 1rem; margin-bottom: 4px; }
+    .book-title a { color: inherit; text-decoration: none; }
     .book-title a:hover { text-decoration: underline; }
-    .book-author { color: #666; font-size: 0.85rem; margin-bottom: 8px; }
+    .book-author { color: #666; font-size: 0.85rem; margin-bottom: 4px; }
+    .book-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .format-icon { font-size: 14px; }
+    .read-date { font-size: 12px; color: #999; }
     .book-review { font-size: 0.85rem; color: #555; margin-top: 8px; }
     .book-actions { display: flex; gap: 8px; align-items: flex-start; }
     .rating-circle { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0; }
@@ -54,134 +56,37 @@
     .import-section { margin-top: 24px; padding: 20px; background: #fff; border: 1px solid #e8e6e3; border-radius: 8px; }
     .import-section textarea { width: 100%; height: 150px; margin: 12px 0; }
     .book-rank { font-size: 14px; color: #999; margin-right: 12px; min-width: 30px; }
-    .admin-badge { display: inline-block; background: #2D3E50; color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-left: 8px; }
+    .format-select { display: flex; gap: 12px; }
+    .format-option { display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; transition: all 0.2s; }
+    .format-option:hover { border-color: #999; }
+    .format-option.selected { border-color: #2d2d2d; background: #f5f5f5; }
+    .format-option input { display: none; }
     @media (max-width: 600px) {
       .form-row { grid-template-columns: 1fr; }
       .stats { grid-template-columns: repeat(2, 1fr); }
       .book-actions { flex-direction: column; }
       nav { gap: 6px; }
       nav button { padding: 6px 12px; font-size: 13px; }
+      .format-select { flex-wrap: wrap; }
     }
   </style>
 </head>
 <body>
   <div id="app"><div class="loading">Loading...</div></div>
   <script>
+    const ADMIN_KEY = 'CV!vxUCQvr*p47xNX@ZB';
+    const CURRENT_YEAR = '2026';
+    
     let books = [];
     let view = 'list';
-    let yearFilter = 'all';
+    let yearFilter = 'current';
     let editingBook = null;
-    let form = { title: '', author: '', year: '', cover: '', rating: null, review: '', dateRead: '', isbn: '', amazonLink: '', pageCount: null };
-    let isbnInput = '';
     let loading = true;
     let error = '';
-    let batchUpdateStatus = '';
-    const AFFILIATE_TAG = 'pagesturned0f-20';
     
-    // Admin authentication
-    const ADMIN_KEY = 'CV!vxUCQvr*p47xNX@ZB';
-    let isAdmin = false;
-    
-    function checkAdmin() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const key = urlParams.get('admin');
-      if (key === ADMIN_KEY) {
-        isAdmin = true;
-        sessionStorage.setItem('adminAuth', 'true');
-      } else if (sessionStorage.getItem('adminAuth') === 'true') {
-        isAdmin = true;
-      }
-    }
-    
-    function logout() {
-      sessionStorage.removeItem('adminAuth');
-      isAdmin = false;
-      window.location.href = window.location.pathname;
-    }
-    
-    checkAdmin();
-
-    const logoSVG = `<svg viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
-      <g transform="translate(8, 6) scale(0.8)">
-        <rect x="0" y="0" width="32" height="48" rx="2" fill="#f5f5f5" stroke="#2d2d2d" stroke-width="1.5"/>
-        <line x1="6" y1="10" x2="26" y2="10" stroke="#ddd" stroke-width="2"/>
-        <line x1="6" y1="17" x2="23" y2="17" stroke="#ddd" stroke-width="2"/>
-        <line x1="6" y1="24" x2="25" y2="24" stroke="#ddd" stroke-width="2"/>
-        <line x1="6" y1="31" x2="20" y2="31" stroke="#ddd" stroke-width="2"/>
-        <path d="M 40 24 L 54 24" fill="none" stroke="#2D3E50" stroke-width="2" stroke-linecap="round"/>
-        <path d="M 50 19 L 55 24 L 50 29" fill="none" stroke="#2D3E50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <rect x="62" y="0" width="32" height="48" rx="2" fill="#2D3E50"/>
-        <path d="M 72 25 L 77 31 L 88 17" fill="none" stroke="#faf9f7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </g>
-    </svg>`;
-
-    async function batchUpdateAmazonLinks() {
-      batchUpdateStatus = 'Updating Amazon links...';
-      render();
-      let updated = 0;
-      
-      for (let book of books) {
-        if (book.isbn && !book.amazonLink) {
-          book.amazonLink = `https://www.amazon.com/dp/${book.isbn}?tag=${AFFILIATE_TAG}`;
-          updated++;
-        }
-      }
-      
-      if (updated > 0) {
-        await saveBooks();
-        batchUpdateStatus = `✓ Updated ${updated} Amazon links`;
-      } else {
-        batchUpdateStatus = 'No books needed Amazon link updates';
-      }
-      render();
-      setTimeout(() => { batchUpdateStatus = ''; render(); }, 3000);
-    }
-
-    async function batchUpdateCovers() {
-      batchUpdateStatus = 'Updating covers and page counts...';
-      render();
-      let updatedCovers = 0;
-      let updatedPages = 0;
-      
-      for (let book of books) {
-        if (book.isbn && (!book.cover || !book.pageCount)) {
-          try {
-            const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${book.isbn}`);
-            const data = await res.json();
-            
-            if (data.items && data.items.length > 0) {
-              const vol = data.items[0].volumeInfo;
-              
-              if (!book.cover && vol.imageLinks?.thumbnail) {
-                book.cover = vol.imageLinks.thumbnail.replace('http:', 'https:');
-                updatedCovers++;
-              } else if (!book.cover) {
-                book.cover = `https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg`;
-                updatedCovers++;
-              }
-              
-              if (!book.pageCount && vol.pageCount) {
-                book.pageCount = vol.pageCount;
-                updatedPages++;
-              }
-            }
-            
-            await new Promise(resolve => setTimeout(resolve, 100));
-          } catch (e) {
-            console.error('Failed to fetch for ISBN:', book.isbn);
-          }
-        }
-      }
-      
-      if (updatedCovers > 0 || updatedPages > 0) {
-        await saveBooks();
-        batchUpdateStatus = `✓ Updated ${updatedCovers} covers, ${updatedPages} page counts`;
-      } else {
-        batchUpdateStatus = 'No books needed updates';
-      }
-      render();
-      setTimeout(() => { batchUpdateStatus = ''; render(); }, 3000);
-    }
+    // Check for admin mode via URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const isAdmin = urlParams.get('admin') === ADMIN_KEY;
 
     const getColor = r => {
       if (r === null) return '#ccc';
@@ -192,18 +97,33 @@
       return '#E53935';
     };
 
+    const getFormatIcon = f => {
+      if (f === 'ebook') return '📱';
+      if (f === 'physical') return '📖';
+      if (f === 'audiobook') return '🎧';
+      return '';
+    };
+
+    const formatReadDate = d => {
+      if (!d) return '';
+      const date = new Date(d);
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const month = months[date.getMonth()];
+      const year = String(date.getFullYear()).slice(2);
+      return `Read ${month} ${year}`;
+    };
+
+    const escapeHtml = str => {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    };
+
     const getYear = d => d ? d.slice(0, 4) : 'Unknown';
     const getYearGroup = d => {
       const y = getYear(d);
       if (!y || y === 'Unknown') return 'Older';
       const n = parseInt(y);
       return n >= 2020 ? y : 'Older';
-    };
-    const formatReadDate = d => {
-      if (!d) return '';
-      const date = new Date(d);
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      return `${months[date.getMonth()]} ${date.getFullYear()}`;
     };
 
     async function loadBooks() {
@@ -218,67 +138,48 @@
 
     async function saveBooks() {
       try {
-        await fetch('/api/books', {
+        const headers = { 'Content-Type': 'application/json' };
+        if (isAdmin) {
+          headers['Authorization'] = `Bearer ${ADMIN_KEY}`;
+        }
+        const res = await fetch('/api/books', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({ books })
         });
+        if (!res.ok) {
+          const data = await res.json();
+          console.error('Save failed:', data.error);
+          alert('Save failed: ' + (data.error || 'Unknown error'));
+          return;
+        }
       } catch (e) { console.error('Save failed:', e); }
       render();
     }
 
     async function fetchISBN() {
-      if (!isbnInput.trim()) return;
+      const isbnInput = document.getElementById('isbnInput').value.trim();
+      if (!isbnInput) return;
       error = '';
       try {
-        const googleRes = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbnInput.trim()}`);
-        const googleData = await googleRes.json();
-        
-        if (googleData.items && googleData.items.length > 0) {
-          const book = googleData.items[0].volumeInfo;
-          form.title = book.title || form.title;
-          form.author = book.authors?.[0] || form.author;
-          form.year = book.publishedDate?.match(/\d{4}/)?.[0] || form.year;
-          form.pageCount = book.pageCount || form.pageCount;
-          
-          if (book.imageLinks?.thumbnail) {
-            form.cover = book.imageLinks.thumbnail.replace('http:', 'https:');
-          } else {
-            form.cover = `https://covers.openlibrary.org/b/isbn/${isbnInput.trim()}-L.jpg`;
-          }
-          form.isbn = isbnInput.trim();
-          form.amazonLink = `https://www.amazon.com/dp/${isbnInput.trim()}?tag=${AFFILIATE_TAG}`;
-        } else {
-          const res = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbnInput.trim()}&format=json&jscmd=data`);
-          const data = await res.json();
-          const b = data[`ISBN:${isbnInput.trim()}`];
-          if (b) {
-            form.title = b.title || form.title;
-            form.author = b.authors?.[0]?.name || form.author;
-            form.year = b.publish_date?.match(/\d{4}/)?.[0] || form.year;
-            form.cover = `https://covers.openlibrary.org/b/isbn/${isbnInput.trim()}-L.jpg`;
-            form.isbn = isbnInput.trim();
-            form.amazonLink = `https://www.amazon.com/dp/${isbnInput.trim()}?tag=${AFFILIATE_TAG}`;
-          } else {
-            error = 'Book not found.';
-          }
-        }
+        const res = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbnInput}&format=json&jscmd=data`);
+        const data = await res.json();
+        const b = data[`ISBN:${isbnInput}`];
+        if (b) {
+          document.getElementById('titleInput').value = b.title || '';
+          document.getElementById('authorInput').value = b.authors?.[0]?.name || '';
+          document.getElementById('yearInput').value = b.publish_date?.match(/\d{4}/)?.[0] || '';
+          document.getElementById('coverInput').value = `https://covers.openlibrary.org/b/isbn/${isbnInput}-M.jpg`;
+        } else { error = 'Book not found.'; }
       } catch (e) { error = 'Failed to fetch.'; }
       render();
     }
 
-    function resetForm() {
-      form = { title: '', author: '', year: '', cover: '', rating: null, review: '', dateRead: '', isbn: '', amazonLink: '', pageCount: null };
-      isbnInput = '';
-      error = '';
-    }
-
-    function openAdd() { resetForm(); editingBook = null; view = 'edit'; render(); }
+    function openAdd() { editingBook = null; view = 'edit'; error = ''; render(); }
     function openEdit(book) {
-      form = { ...book, year: String(book.year || ''), rating: book.rating, pageCount: book.pageCount };
-      isbnInput = book.isbn || '';
       editingBook = book;
       view = 'edit';
+      error = '';
       render();
     }
     function deleteBook(id) {
@@ -287,20 +188,37 @@
         saveBooks();
       }
     }
+    
+    function getFormData() {
+      return {
+        title: document.getElementById('titleInput').value,
+        author: document.getElementById('authorInput').value,
+        year: parseInt(document.getElementById('yearInput').value) || null,
+        cover: document.getElementById('coverInput').value,
+        dateRead: document.getElementById('dateReadInput').value,
+        rating: document.getElementById('ratingInput').value === '' ? null : parseInt(document.getElementById('ratingInput').value),
+        format: document.querySelector('input[name="format"]:checked')?.value || '',
+        amazonUrl: document.getElementById('amazonUrlInput').value,
+        review: document.getElementById('reviewInput').value,
+        isbn: document.getElementById('isbnInput').value
+      };
+    }
+    
     function saveBook() {
-      if (!form.title.trim()) { error = 'Title required'; render(); return; }
-      const rating = form.rating === '' || form.rating === null ? null : parseInt(form.rating);
-      const pageCount = form.pageCount === '' || form.pageCount === null ? null : parseInt(form.pageCount);
+      const formData = getFormData();
+      if (!formData.title.trim()) { error = 'Title required'; render(); return; }
+      
       if (editingBook) {
-        books = books.map(b => b.id === editingBook.id ? { ...form, id: b.id, year: parseInt(form.year) || null, rating, pageCount } : b);
+        books = books.map(b => b.id === editingBook.id ? { ...formData, id: b.id } : b);
       } else {
-        books.push({ ...form, id: Date.now(), year: parseInt(form.year) || null, rating, pageCount });
+        books.push({ ...formData, id: Date.now() });
       }
       saveBooks();
       view = 'list';
-      resetForm();
+      editingBook = null;
+      error = '';
     }
-    function goBack() { view = 'list'; resetForm(); render(); }
+    function goBack() { view = 'list'; editingBook = null; error = ''; render(); }
     function setYear(y) { yearFilter = y; render(); }
     function setView(v) { view = v; render(); }
 
@@ -317,59 +235,93 @@
 
     function ratingCircle(r) {
       const color = getColor(r);
-      const label = r === null ? '—' : r;
+      const label = r === null ? '–' : r;
       const cls = r === null ? 'rating-circle rating-unrated' : 'rating-circle';
       return `<div class="${cls}" style="background:${color};box-shadow:0 3px 10px ${color}44">${label}</div>`;
     }
 
     function filterBooks() {
-      if (yearFilter === 'all') return [...books].sort((a,b) => (b.rating||0) - (a.rating||0));
-      if (yearFilter === 'rankings') return [...books].filter(b => b.rating !== null).sort((a,b) => b.rating - a.rating);
+      if (yearFilter === 'current') {
+        return books.filter(b => getYearGroup(b.dateRead) === CURRENT_YEAR).sort((a,b) => (b.rating||0) - (a.rating||0));
+      }
+      if (yearFilter === 'alltime') {
+        return [...books].filter(b => b.rating !== null).sort((a,b) => b.rating - a.rating);
+      }
       return books.filter(b => getYearGroup(b.dateRead) === yearFilter).sort((a,b) => (b.rating||0) - (a.rating||0));
+    }
+
+    function getStatsForFilter() {
+      let subset;
+      if (yearFilter === 'current') {
+        subset = books.filter(b => getYearGroup(b.dateRead) === CURRENT_YEAR);
+      } else if (yearFilter === 'alltime') {
+        subset = books;
+      } else {
+        subset = books.filter(b => getYearGroup(b.dateRead) === yearFilter);
+      }
+      const rated = subset.filter(b => b.rating !== null);
+      const avg = rated.length ? (rated.reduce((s,b) => s + b.rating, 0) / rated.length).toFixed(0) : '–';
+      const ninety = subset.filter(b => b.rating >= 90).length;
+      return { total: subset.length, rated: rated.length, avg, ninety };
+    }
+
+    function renderBookTitle(book) {
+      const title = escapeHtml(book.title);
+      if (book.amazonUrl) {
+        return `<a href="${escapeHtml(book.amazonUrl)}" target="_blank" rel="noopener noreferrer">${title}</a>`;
+      }
+      return title;
+    }
+
+    function renderBookMeta(book) {
+      const formatIcon = getFormatIcon(book.format);
+      const readDate = formatReadDate(book.dateRead);
+      if (!formatIcon && !readDate) return '';
+      return `<div class="book-meta">
+        ${formatIcon ? `<span class="format-icon">${formatIcon}</span>` : ''}
+        ${readDate ? `<span class="read-date">${readDate}</span>` : ''}
+      </div>`;
     }
 
     function renderList() {
       if (loading) return '<div class="loading">Loading...</div>';
-      const years = ['all', '2025', '2024', '2023', '2022', '2021', '2020', 'Older', 'rankings'];
+      const years = ['current', '2025', '2024', '2023', '2022', '2021', '2020', 'Older', 'alltime'];
       const filtered = filterBooks();
-      const rated = books.filter(b => b.rating !== null);
-      const avg = rated.length ? (rated.reduce((s,b) => s + b.rating, 0) / rated.length).toFixed(0) : '—';
-
-      const totalPages = books.reduce((sum, b) => sum + (b.pageCount || 0), 0);
+      const stats = getStatsForFilter();
 
       let html = `
         <header>
-          <div class="logo">${logoSVG}</div>
-          <h1>Pages Turned${isAdmin ? '<span class="admin-badge">Admin</span>' : ''}</h1>
+          <h1>Pages Turned</h1>
           <p class="subtitle">${books.length} books</p>
           <nav>
-            ${years.map(y => `<button class="${yearFilter === y ? 'active' : ''}" onclick="setYear('${y}')">${y === 'all' ? 'All' : y === 'rankings' ? '🏆 Rankings' : y}</button>`).join('')}
+            ${years.map(y => `<button class="${yearFilter === y ? 'active' : ''}" onclick="setYear('${y}')">${y === 'current' ? 'Current' : y === 'alltime' ? '🏆 All Time' : y}</button>`).join('')}
           </nav>
         </header>
         <div class="container">
           <div class="top-bar">
-            <div>${isAdmin ? `<button class="btn btn-secondary btn-small" onclick="logout()">Logout</button>` : ''}</div>
-            <div style="display:flex;gap:8px;">
-              ${isAdmin ? `<button class="btn btn-secondary" onclick="setView('import')">Utilities</button>
-              <button class="btn" onclick="openAdd()">+ Add Book</button>` : ''}
-            </div>
+            <div></div>
+            ${isAdmin ? `<div style="display:flex;gap:8px;">
+              <button class="btn btn-secondary" onclick="setView('import')">Import</button>
+              <button class="btn" onclick="openAdd()">+ Add Book</button>
+            </div>` : ''}
           </div>
           <div class="card stats">
-            <div><div class="stat-number">${books.length}</div><div class="stat-label">Books</div></div>
-            <div><div class="stat-number">${totalPages.toLocaleString()}</div><div class="stat-label">Pages</div></div>
-            <div><div class="stat-number">${avg}</div><div class="stat-label">Avg Rating</div></div>
-            <div><div class="stat-number">${books.filter(b => b.rating >= 90).length}</div><div class="stat-label">90+ Books</div></div>
+            <div><div class="stat-number">${stats.total}</div><div class="stat-label">Books</div></div>
+            <div><div class="stat-number">${stats.rated}</div><div class="stat-label">Rated</div></div>
+            <div><div class="stat-number">${stats.avg}</div><div class="stat-label">Avg Rating</div></div>
+            <div><div class="stat-number">${stats.ninety}</div><div class="stat-label">90+ Books</div></div>
           </div>`;
 
-      if (yearFilter === 'rankings') {
+      if (yearFilter === 'alltime') {
         html += `<h2 class="section-title">All-Time Rankings</h2>`;
         filtered.forEach((book, i) => {
           html += `<div class="card book-card">
             <div class="book-rank">#${i + 1}</div>
-            <div class="book-cover">${book.cover ? `<img src="${book.cover}" onerror="this.parentElement.innerHTML=''">`  : ''}</div>
+            <div class="book-cover">${book.cover ? `<img src="${escapeHtml(book.cover)}" onerror="this.parentElement.innerHTML=''">` : ''}</div>
             <div class="book-info">
-              <div class="book-title">${book.amazonLink ? `<a href="${book.amazonLink}" target="_blank" rel="noopener noreferrer" style="color:#2d2d2d;text-decoration:none">${book.title}</a>` : book.title}</div>
-              <p class="book-author">${book.author || ''}${book.year ? ` (${book.year})` : ''}${book.dateRead ? ` • Read ${formatReadDate(book.dateRead)}` : ''}${book.pageCount ? ` • ${book.pageCount} pages` : ''}</p>
+              <div class="book-title">${renderBookTitle(book)}</div>
+              <p class="book-author">${escapeHtml(book.author) || ''}${book.year ? ` (${book.year})` : ''}</p>
+              ${renderBookMeta(book)}
             </div>
             ${ratingCircle(book.rating)}
           </div>`;
@@ -380,11 +332,12 @@
         } else {
           filtered.forEach(book => {
             html += `<div class="card book-card">
-              <div class="book-cover">${book.cover ? `<img src="${book.cover}" onerror="this.parentElement.innerHTML=''">`  : ''}</div>
+              <div class="book-cover">${book.cover ? `<img src="${escapeHtml(book.cover)}" onerror="this.parentElement.innerHTML=''">` : ''}</div>
               <div class="book-info">
-                <div class="book-title">${book.amazonLink ? `<a href="${book.amazonLink}" target="_blank" rel="noopener noreferrer" style="color:#2d2d2d;text-decoration:none">${book.title}</a>` : book.title}</div>
-                <p class="book-author">${book.author || ''}${book.year ? ` (${book.year})` : ''}${book.dateRead ? ` • Read ${formatReadDate(book.dateRead)}` : ''}${book.pageCount ? ` • ${book.pageCount} pages` : ''}</p>
-                ${book.review ? `<p class="book-review">${book.review}</p>` : ''}
+                <div class="book-title">${renderBookTitle(book)}</div>
+                <p class="book-author">${escapeHtml(book.author) || ''}${book.year ? ` (${book.year})` : ''}</p>
+                ${renderBookMeta(book)}
+                ${book.review ? `<p class="book-review">${escapeHtml(book.review)}</p>` : ''}
               </div>
               ${ratingCircle(book.rating)}
               ${isAdmin ? `<div class="book-actions">
@@ -400,7 +353,7 @@
     }
 
     function renderEdit() {
-      if (!isAdmin) { view = 'list'; render(); return ''; }
+      const book = editingBook || {};
       return `
         <div class="container" style="padding-top:32px">
           <button class="back-link" onclick="goBack()">← Back</button>
@@ -409,56 +362,64 @@
             <div class="form-group">
               <label>Import from ISBN</label>
               <div style="display:flex;gap:8px">
-                <input type="text" value="${isbnInput}" oninput="isbnInput=this.value" placeholder="e.g. 9780593321201" style="flex:1">
+                <input type="text" id="isbnInput" value="${escapeHtml(book.isbn || '')}" placeholder="e.g. 9780593321201" style="flex:1">
                 <button class="btn" onclick="fetchISBN()">Fetch</button>
               </div>
               ${error ? `<p class="error">${error}</p>` : ''}
             </div>
             <hr style="border:none;border-top:1px solid #eee;margin:20px 0">
-            ${form.cover ? `<div style="text-align:center;margin-bottom:16px"><img src="${form.cover}" style="height:120px;border-radius:4px" onerror="this.style.display='none'"></div>` : ''}
             <div class="form-group">
               <label>Title *</label>
-              <input type="text" value="${form.title}" oninput="form.title=this.value" style="width:100%">
+              <input type="text" id="titleInput" value="${escapeHtml(book.title || '')}" style="width:100%">
             </div>
             <div class="form-row">
               <div class="form-group">
                 <label>Author</label>
-                <input type="text" value="${form.author}" oninput="form.author=this.value" style="width:100%">
+                <input type="text" id="authorInput" value="${escapeHtml(book.author || '')}" style="width:100%">
               </div>
               <div class="form-group">
                 <label>Year Published</label>
-                <input type="text" value="${form.year}" oninput="form.year=this.value" style="width:100%">
+                <input type="text" id="yearInput" value="${book.year || ''}" style="width:100%">
               </div>
             </div>
             <div class="form-group">
               <label>Cover URL</label>
-              <input type="text" value="${form.cover}" oninput="form.cover=this.value" placeholder="https://..." style="width:100%">
+              <input type="text" id="coverInput" value="${escapeHtml(book.cover || '')}" placeholder="https://..." style="width:100%">
             </div>
             <div class="form-group">
-              <label>Amazon Link</label>
-              <input type="text" value="${form.amazonLink || ''}" oninput="form.amazonLink=this.value" placeholder="https://www.amazon.com/dp/..." style="width:100%">
+              <label>Amazon URL</label>
+              <input type="text" id="amazonUrlInput" value="${escapeHtml(book.amazonUrl || '')}" placeholder="https://amazon.com/..." style="width:100%">
             </div>
             <div class="form-row">
               <div class="form-group">
                 <label>Date Read</label>
-                <input type="date" value="${form.dateRead}" oninput="form.dateRead=this.value">
+                <input type="date" id="dateReadInput" value="${book.dateRead || ''}">
               </div>
-              <div class="form-group">
-                <label>Page Count</label>
-                <input type="number" min="1" value="${form.pageCount || ''}" oninput="form.pageCount=this.value" placeholder="Optional">
-              </div>
-            </div>
-            <div class="form-row">
               <div class="form-group">
                 <label>Rating (1-100)</label>
-                <input type="number" min="1" max="100" value="${form.rating || ''}" oninput="form.rating=this.value" placeholder="Leave blank if unrated">
+                <input type="number" id="ratingInput" min="1" max="100" value="${book.rating !== null && book.rating !== undefined ? book.rating : ''}" placeholder="Leave blank if unrated">
               </div>
-              <div class="form-group">
+            </div>
+            <div class="form-group">
+              <label>Format</label>
+              <div class="format-select">
+                <label class="format-option ${book.format === 'ebook' ? 'selected' : ''}">
+                  <input type="radio" name="format" value="ebook" ${book.format === 'ebook' ? 'checked' : ''}>
+                  📱 eBook
+                </label>
+                <label class="format-option ${book.format === 'physical' ? 'selected' : ''}">
+                  <input type="radio" name="format" value="physical" ${book.format === 'physical' ? 'checked' : ''}>
+                  📖 Physical
+                </label>
+                <label class="format-option ${book.format === 'audiobook' ? 'selected' : ''}">
+                  <input type="radio" name="format" value="audiobook" ${book.format === 'audiobook' ? 'checked' : ''}>
+                  🎧 Audiobook
+                </label>
               </div>
             </div>
             <div class="form-group">
               <label>Review</label>
-              <textarea oninput="form.review=this.value" rows="4" style="width:100%">${form.review}</textarea>
+              <textarea id="reviewInput" rows="4" style="width:100%">${escapeHtml(book.review || '')}</textarea>
             </div>
             <button class="btn" onclick="saveBook()" style="width:100%">${editingBook ? 'Save Changes' : 'Add Book'}</button>
           </div>
@@ -466,25 +427,12 @@
     }
 
     function renderImport() {
-      if (!isAdmin) { view = 'list'; render(); return ''; }
       return `
         <div class="container" style="padding-top:32px">
           <button class="back-link" onclick="setView('list')">← Back</button>
-          <h1 style="font-family:'Libre Baskerville',serif;font-size:1.4rem;font-weight:400;margin:20px 0">Import & Utilities</h1>
-          
+          <h1 style="font-family:'Libre Baskerville',serif;font-size:1.4rem;font-weight:400;margin:20px 0">Import Books</h1>
           <div class="card">
-            <h3 style="font-size:1rem;margin-bottom:12px">Batch Updates</h3>
-            <p style="margin-bottom:12px;color:#666;font-size:14px">Automatically update all books with missing data</p>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button class="btn btn-secondary" onclick="batchUpdateAmazonLinks()">Update Amazon Links</button>
-              <button class="btn btn-secondary" onclick="batchUpdateCovers()">Update Covers & Pages</button>
-            </div>
-            ${batchUpdateStatus ? `<p style="margin-top:12px;color:#2E7D32;font-size:14px">${batchUpdateStatus}</p>` : ''}
-          </div>
-
-          <div class="card" style="margin-top:16px">
-            <h3 style="font-size:1rem;margin-bottom:12px">Import Books</h3>
-            <p style="margin-bottom:12px;color:#666;font-size:14px">Paste your books JSON array below. This will replace all existing books.</p>
+            <p style="margin-bottom:12px;color:#666">Paste your books JSON array below. This will replace all existing books.</p>
             <textarea id="importData" placeholder='[{"title":"Book Title","author":"Author Name",...}]' style="width:100%;height:200px;font-family:monospace;font-size:12px"></textarea>
             <button class="btn" onclick="importBooks(document.getElementById('importData').value)" style="margin-top:12px">Import</button>
           </div>
@@ -493,8 +441,8 @@
 
     function render() {
       const app = document.getElementById('app');
-      if (view === 'edit') app.innerHTML = renderEdit();
-      else if (view === 'import') app.innerHTML = renderImport();
+      if (view === 'edit' && isAdmin) app.innerHTML = renderEdit();
+      else if (view === 'import' && isAdmin) app.innerHTML = renderImport();
       else app.innerHTML = renderList();
     }
 
