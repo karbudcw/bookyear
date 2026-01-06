@@ -181,11 +181,20 @@
       const pageCountInput = document.querySelector('input[placeholder="Number of pages"]');
       const ratingInput = document.querySelector('input[placeholder="Leave blank if unrated"]');
       
+      console.log('pageCountInput element:', pageCountInput);
+      console.log('pageCountInput value:', pageCountInput ? pageCountInput.value : 'not found');
+      
       const ratingValue = ratingInput ? ratingInput.value.trim() : '';
       const pageCountValue = pageCountInput ? pageCountInput.value.trim() : '';
       
+      console.log('ratingValue:', ratingValue);
+      console.log('pageCountValue:', pageCountValue);
+      
       const rating = ratingValue !== '' ? parseInt(ratingValue) : null;
       const pageCount = pageCountValue !== '' ? parseInt(pageCountValue) : null;
+      
+      console.log('Parsed rating:', rating);
+      console.log('Parsed pageCount:', pageCount);
       
       const bookData = {
         ...form,
@@ -194,11 +203,16 @@
         pageCount
       };
       
+      console.log('bookData:', bookData);
+      
       if (editingBook) {
         books = books.map(b => b.id === editingBook.id ? { ...b, ...bookData } : b);
       } else {
         books.push({ ...bookData, id: Date.now() });
       }
+      
+      console.log('Book after save:', editingBook ? books.find(b => b.id === editingBook.id) : books[books.length - 1]);
+      
       saveBooks();
       view = 'list';
       resetForm();
