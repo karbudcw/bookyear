@@ -178,23 +178,45 @@
       }
     }
     function saveBook() {
-      if (!form.title.trim()) { error = 'Title required'; render(); return; }
-      
-      // Read values directly from DOM to avoid re-rendering issues
+      // Read ALL values directly from DOM to avoid re-rendering issues
+      const titleInput = document.querySelector('input[placeholder=""]'); // Title input (first input without specific placeholder)
+      const authorInputs = document.querySelectorAll('.form-row input');
+      const yearInput = authorInputs[1]; // Second input in form-row
+      const coverInput = document.querySelector('input[placeholder="https://..."]');
+      const dateReadInput = document.querySelector('input[type="date"]');
       const pageCountInput = document.querySelector('input[placeholder="Number of pages"]');
       const ratingInput = document.querySelector('input[placeholder="Leave blank if unrated"]');
+      const reviewTextarea = document.querySelector('textarea');
       
-      const ratingValue = ratingInput ? ratingInput.value.trim() : '';
-      const pageCountValue = pageCountInput ? pageCountInput.value.trim() : '';
+      // Get title - find it more reliably
+      const allInputs = document.querySelectorAll('input[type="text"]');
+      const titleEl = allInputs[0]; // First text input is title
+      const authorEl = allInputs[1]; // Second is author
+      const yearEl = allInputs[2]; // Third is year
+      const coverEl = allInputs[3]; // Fourth is cover URL
       
-      const rating = ratingValue !== '' ? parseInt(ratingValue) : null;
-      const pageCount = pageCountValue !== '' ? parseInt(pageCountValue) : null;
+      const title = titleEl ? titleEl.value.trim() : '';
+      if (!title) { error = 'Title required'; render(); return; }
+      
+      const author = authorEl ? authorEl.value.trim() : '';
+      const year = yearEl ? parseInt(yearEl.value) || null : null;
+      const cover = coverEl ? coverEl.value.trim() : '';
+      const dateRead = dateReadInput ? dateReadInput.value : '';
+      const pageCount = pageCountInput && pageCountInput.value.trim() !== '' ? parseInt(pageCountInput.value) : null;
+      const rating = ratingInput && ratingInput.value.trim() !== '' ? parseInt(ratingInput.value) : null;
+      const review = reviewTextarea ? reviewTextarea.value.trim() : '';
       
       const bookData = {
-        ...form,
-        year: parseInt(form.year) || null,
+        title,
+        author,
+        year,
+        cover,
+        dateRead,
+        pageCount,
         rating,
-        pageCount
+        review,
+        format: form.format, // This one is safe since it's updated via button clicks
+        isbn: form.isbn || '' // ISBN doesn't have an input field when editing
       };
       
       if (editingBook) {
