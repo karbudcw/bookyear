@@ -33,6 +33,7 @@
     .book-cover img { width: 100%; height: 100%; object-fit: cover; }
     .book-info { flex: 1; min-width: 0; }
     .book-title { font-family: 'Libre Baskerville', serif; font-size: 1rem; margin-bottom: 4px; }
+    .book-title a:hover { text-decoration: underline; }
     .book-author { color: #666; font-size: 0.85rem; margin-bottom: 8px; }
     .book-review { font-size: 0.85rem; color: #555; margin-top: 8px; }
     .book-actions { display: flex; gap: 8px; align-items: flex-start; }
@@ -67,10 +68,82 @@
     let view = 'list';
     let yearFilter = 'all';
     let editingBook = null;
-    let form = { title: '', author: '', year: '', cover: '', rating: null, review: '', dateRead: '', isbn: '' };
+    let form = { title: '', author: '', year: '', cover: '', rating: null, review: '', dateRead: '', isbn: '', amazonLink: '', pageCount: null };
     let isbnInput = '';
     let loading = true;
     let error = '';
+    let batchUpdateStatus = '';
+    const AFFILIATE_TAG = 'pagesturned0f-20';
+
+    async function batchUpdateAmazonLinks() {
+      batchUpdateStatus = 'Updating Amazon links...';
+      render();
+      let updated = 0;
+      
+      for (let book of books) {
+        if (book.isbn && !book.amazonLink) {
+          book.amazonLink = `https://www.amazon.com/dp/${book.isbn}?tag=${AFFILIATE_TAG}`;
+          updated++;
+        }
+      }
+      
+      if (updated > 0) {
+        await saveBooks();
+        batchUpdateStatus = `✓ Updated ${updated} Amazon links`;
+      } else {
+        batchUpdateStatus = 'No books needed Amazon link updates';
+      }
+      render();
+      setTimeout(() => { batchUpdateStatus = ''; render(); }, 3000);
+    }
+
+    async function batchUpdateCovers() {
+      batchUpdateStatus = 'Updating covers and page counts...';
+      render();
+      let updatedCovers = 0;
+      let updatedPages = 0;
+      
+      for (let book of books) {
+        if (book.isbn && (!book.cover || !book.pageCount)) {
+          try {
+            // Try Google Books API first
+            const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${book.isbn}`);
+            const data = await res.json();
+            
+            if (data.items && data.items.length > 0) {
+              const vol = data.items[0].volumeInfo;
+              
+              if (!book.cover && vol.imageLinks?.thumbnail) {
+                book.cover = vol.imageLinks.thumbnail.replace('http:', 'https:');
+                updatedCovers++;
+              } else if (!book.cover) {
+                book.cover = `https://covers.openlibrary.org/b/isbn/${book.isbn}-L.jpg`;
+                updatedCovers++;
+              }
+              
+              if (!book.pageCount && vol.pageCount) {
+                book.pageCount = vol.pageCount;
+                updatedPages++;
+              }
+            }
+            
+            // Small delay to avoid rate limiting
+            await new Promise(resolve => setTimeout(resolve, 100));
+          } catch (e) {
+            console.error('Failed to fetch for ISBN:', book.isbn);
+          }
+        }
+      }
+      
+      if (updatedCovers > 0 || updatedPages > 0) {
+        await saveBooks();
+        batchUpdateStatus = `✓ Updated ${updatedCovers} covers, ${updatedPages} page counts`;
+      } else {
+        batchUpdateStatus = 'No books needed updates';
+      }
+      render();
+      setTimeout(() => { batchUpdateStatus = ''; render(); }, 3000);
+    }
 
     const getColor = r => {
       if (r === null) return '#ccc';
@@ -87,6 +160,12 @@
       if (!y || y === 'Unknown') return 'Older';
       const n = parseInt(y);
       return n >= 2020 ? y : 'Older';
+    };
+    const formatReadDate = d => {
+      if (!d) return '';
+      const date = new Date(d);
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return `${months[date.getMonth()]} ${date.getFullYear()}`;
     };
 
     async function loadBooks() {
@@ -114,29 +193,55 @@
       if (!isbnInput.trim()) return;
       error = '';
       try {
-        const res = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbnInput.trim()}&format=json&jscmd=data`);
-        const data = await res.json();
-        const b = data[`ISBN:${isbnInput.trim()}`];
-        if (b) {
-          form.title = b.title || form.title;
-          form.author = b.authors?.[0]?.name || form.author;
-          form.year = b.publish_date?.match(/\d{4}/)?.[0] || form.year;
-          form.cover = `https://covers.openlibrary.org/b/isbn/${isbnInput.trim()}-M.jpg`;
+        // Try Google Books API first (better coverage + page counts)
+        const googleRes = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${isbnInput.trim()}`);
+        const googleData = await googleRes.json();
+        
+        if (googleData.items && googleData.items.length > 0) {
+          const book = googleData.items[0].volumeInfo;
+          form.title = book.title || form.title;
+          form.author = book.authors?.[0] || form.author;
+          form.year = book.publishedDate?.match(/\d{4}/)?.[0] || form.year;
+          form.pageCount = book.pageCount || form.pageCount;
+          
+          // Try Google Books cover first
+          if (book.imageLinks?.thumbnail) {
+            form.cover = book.imageLinks.thumbnail.replace('http:', 'https:');
+          } else {
+            // Fallback to Open Library cover
+            form.cover = `https://covers.openlibrary.org/b/isbn/${isbnInput.trim()}-L.jpg`;
+          }
           form.isbn = isbnInput.trim();
-        } else { error = 'Book not found.'; }
+          form.amazonLink = `https://www.amazon.com/dp/${isbnInput.trim()}?tag=${AFFILIATE_TAG}`;
+        } else {
+          // Fallback to Open Library if Google Books has nothing
+          const res = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbnInput.trim()}&format=json&jscmd=data`);
+          const data = await res.json();
+          const b = data[`ISBN:${isbnInput.trim()}`];
+          if (b) {
+            form.title = b.title || form.title;
+            form.author = b.authors?.[0]?.name || form.author;
+            form.year = b.publish_date?.match(/\d{4}/)?.[0] || form.year;
+            form.cover = `https://covers.openlibrary.org/b/isbn/${isbnInput.trim()}-L.jpg`;
+            form.isbn = isbnInput.trim();
+            form.amazonLink = `https://www.amazon.com/dp/${isbnInput.trim()}?tag=${AFFILIATE_TAG}`;
+          } else {
+            error = 'Book not found.';
+          }
+        }
       } catch (e) { error = 'Failed to fetch.'; }
       render();
     }
 
     function resetForm() {
-      form = { title: '', author: '', year: '', cover: '', rating: null, review: '', dateRead: '', isbn: '' };
+      form = { title: '', author: '', year: '', cover: '', rating: null, review: '', dateRead: '', isbn: '', amazonLink: '', pageCount: null };
       isbnInput = '';
       error = '';
     }
 
     function openAdd() { resetForm(); editingBook = null; view = 'edit'; render(); }
     function openEdit(book) {
-      form = { ...book, year: String(book.year || ''), rating: book.rating };
+      form = { ...book, year: String(book.year || ''), rating: book.rating, pageCount: book.pageCount };
       isbnInput = book.isbn || '';
       editingBook = book;
       view = 'edit';
@@ -151,10 +256,11 @@
     function saveBook() {
       if (!form.title.trim()) { error = 'Title required'; render(); return; }
       const rating = form.rating === '' || form.rating === null ? null : parseInt(form.rating);
+      const pageCount = form.pageCount === '' || form.pageCount === null ? null : parseInt(form.pageCount);
       if (editingBook) {
-        books = books.map(b => b.id === editingBook.id ? { ...form, id: b.id, year: parseInt(form.year) || null, rating } : b);
+        books = books.map(b => b.id === editingBook.id ? { ...form, id: b.id, year: parseInt(form.year) || null, rating, pageCount } : b);
       } else {
-        books.push({ ...form, id: Date.now(), year: parseInt(form.year) || null, rating });
+        books.push({ ...form, id: Date.now(), year: parseInt(form.year) || null, rating, pageCount });
       }
       saveBooks();
       view = 'list';
@@ -177,7 +283,7 @@
 
     function ratingCircle(r) {
       const color = getColor(r);
-      const label = r === null ? 'â€”' : r;
+      const label = r === null ? '—' : r;
       const cls = r === null ? 'rating-circle rating-unrated' : 'rating-circle';
       return `<div class="${cls}" style="background:${color};box-shadow:0 3px 10px ${color}44">${label}</div>`;
     }
@@ -193,27 +299,29 @@
       const years = ['all', '2025', '2024', '2023', '2022', '2021', '2020', 'Older', 'rankings'];
       const filtered = filterBooks();
       const rated = books.filter(b => b.rating !== null);
-      const avg = rated.length ? (rated.reduce((s,b) => s + b.rating, 0) / rated.length).toFixed(0) : 'â€”';
+      const avg = rated.length ? (rated.reduce((s,b) => s + b.rating, 0) / rated.length).toFixed(0) : '—';
+
+      const totalPages = books.reduce((sum, b) => sum + (b.pageCount || 0), 0);
 
       let html = `
         <header>
           <h1>Pages Turned</h1>
           <p class="subtitle">${books.length} books</p>
           <nav>
-            ${years.map(y => `<button class="${yearFilter === y ? 'active' : ''}" onclick="setYear('${y}')">${y === 'all' ? 'All' : y === 'rankings' ? 'ðŸ† Rankings' : y}</button>`).join('')}
+            ${years.map(y => `<button class="${yearFilter === y ? 'active' : ''}" onclick="setYear('${y}')">${y === 'all' ? 'All' : y === 'rankings' ? '🏆 Rankings' : y}</button>`).join('')}
           </nav>
         </header>
         <div class="container">
           <div class="top-bar">
             <div></div>
             <div style="display:flex;gap:8px;">
-              <button class="btn btn-secondary" onclick="setView('import')">Import</button>
+              <button class="btn btn-secondary" onclick="setView('import')">Utilities</button>
               <button class="btn" onclick="openAdd()">+ Add Book</button>
             </div>
           </div>
           <div class="card stats">
             <div><div class="stat-number">${books.length}</div><div class="stat-label">Books</div></div>
-            <div><div class="stat-number">${rated.length}</div><div class="stat-label">Rated</div></div>
+            <div><div class="stat-number">${totalPages.toLocaleString()}</div><div class="stat-label">Pages</div></div>
             <div><div class="stat-number">${avg}</div><div class="stat-label">Avg Rating</div></div>
             <div><div class="stat-number">${books.filter(b => b.rating >= 90).length}</div><div class="stat-label">90+ Books</div></div>
           </div>`;
@@ -225,8 +333,8 @@
             <div class="book-rank">#${i + 1}</div>
             <div class="book-cover">${book.cover ? `<img src="${book.cover}" onerror="this.parentElement.innerHTML=''">`  : ''}</div>
             <div class="book-info">
-              <div class="book-title">${book.title}</div>
-              <p class="book-author">${book.author || ''}${book.year ? ` (${book.year})` : ''}</p>
+              <div class="book-title">${book.amazonLink ? `<a href="${book.amazonLink}" target="_blank" rel="noopener noreferrer" style="color:#2d2d2d;text-decoration:none">${book.title}</a>` : book.title}</div>
+              <p class="book-author">${book.author || ''}${book.year ? ` (${book.year})` : ''}${book.dateRead ? ` • Read ${formatReadDate(book.dateRead)}` : ''}${book.pageCount ? ` • ${book.pageCount} pages` : ''}</p>
             </div>
             ${ratingCircle(book.rating)}
           </div>`;
@@ -239,8 +347,8 @@
             html += `<div class="card book-card">
               <div class="book-cover">${book.cover ? `<img src="${book.cover}" onerror="this.parentElement.innerHTML=''">`  : ''}</div>
               <div class="book-info">
-                <div class="book-title">${book.title}</div>
-                <p class="book-author">${book.author || ''}${book.year ? ` (${book.year})` : ''}</p>
+                <div class="book-title">${book.amazonLink ? `<a href="${book.amazonLink}" target="_blank" rel="noopener noreferrer" style="color:#2d2d2d;text-decoration:none">${book.title}</a>` : book.title}</div>
+                <p class="book-author">${book.author || ''}${book.year ? ` (${book.year})` : ''}${book.dateRead ? ` • Read ${formatReadDate(book.dateRead)}` : ''}${book.pageCount ? ` • ${book.pageCount} pages` : ''}</p>
                 ${book.review ? `<p class="book-review">${book.review}</p>` : ''}
               </div>
               ${ratingCircle(book.rating)}
@@ -259,7 +367,7 @@
     function renderEdit() {
       return `
         <div class="container" style="padding-top:32px">
-          <button class="back-link" onclick="goBack()">â† Back</button>
+          <button class="back-link" onclick="goBack()">← Back</button>
           <h1 style="font-family:'Libre Baskerville',serif;font-size:1.4rem;font-weight:400;margin:20px 0">${editingBook ? 'Edit Book' : 'Add Book'}</h1>
           <div class="card">
             <div class="form-group">
@@ -290,14 +398,27 @@
               <label>Cover URL</label>
               <input type="text" value="${form.cover}" oninput="form.cover=this.value" placeholder="https://..." style="width:100%">
             </div>
+            <div class="form-group">
+              <label>Amazon Link</label>
+              <input type="text" value="${form.amazonLink || ''}" oninput="form.amazonLink=this.value" placeholder="https://www.amazon.com/dp/..." style="width:100%">
+            </div>
             <div class="form-row">
               <div class="form-group">
                 <label>Date Read</label>
                 <input type="date" value="${form.dateRead}" oninput="form.dateRead=this.value">
               </div>
               <div class="form-group">
+                <label>Page Count</label>
+                <input type="number" min="1" value="${form.pageCount || ''}" oninput="form.pageCount=this.value" placeholder="Optional">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
                 <label>Rating (1-100)</label>
                 <input type="number" min="1" max="100" value="${form.rating || ''}" oninput="form.rating=this.value" placeholder="Leave blank if unrated">
+              </div>
+              <div class="form-group">
+                <!-- Empty space for alignment -->
               </div>
             </div>
             <div class="form-group">
@@ -312,10 +433,22 @@
     function renderImport() {
       return `
         <div class="container" style="padding-top:32px">
-          <button class="back-link" onclick="setView('list')">â† Back</button>
-          <h1 style="font-family:'Libre Baskerville',serif;font-size:1.4rem;font-weight:400;margin:20px 0">Import Books</h1>
+          <button class="back-link" onclick="setView('list')">← Back</button>
+          <h1 style="font-family:'Libre Baskerville',serif;font-size:1.4rem;font-weight:400;margin:20px 0">Import & Utilities</h1>
+          
           <div class="card">
-            <p style="margin-bottom:12px;color:#666">Paste your books JSON array below. This will replace all existing books.</p>
+            <h3 style="font-size:1rem;margin-bottom:12px">Batch Updates</h3>
+            <p style="margin-bottom:12px;color:#666;font-size:14px">Automatically update all books with missing data</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-secondary" onclick="batchUpdateAmazonLinks()">Update Amazon Links</button>
+              <button class="btn btn-secondary" onclick="batchUpdateCovers()">Update Covers & Pages</button>
+            </div>
+            ${batchUpdateStatus ? `<p style="margin-top:12px;color:#2E7D32;font-size:14px">${batchUpdateStatus}</p>` : ''}
+          </div>
+
+          <div class="card" style="margin-top:16px">
+            <h3 style="font-size:1rem;margin-bottom:12px">Import Books</h3>
+            <p style="margin-bottom:12px;color:#666;font-size:14px">Paste your books JSON array below. This will replace all existing books.</p>
             <textarea id="importData" placeholder='[{"title":"Book Title","author":"Author Name",...}]' style="width:100%;height:200px;font-family:monospace;font-size:12px"></textarea>
             <button class="btn" onclick="importBooks(document.getElementById('importData').value)" style="margin-top:12px">Import</button>
           </div>
