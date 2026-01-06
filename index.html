@@ -277,7 +277,7 @@
           <nav>
             ${years.map(y => {
               let label;
-              if (y === 'current') label = 'Current';
+              if (y === 'current') label = 'Current Year';
               else if (y === 'rankings') label = '🏆 All Time';
               else label = y;
               return `<button class="${yearFilter === y ? 'active' : ''}" onclick="setYear('${y}')">${label}</button>`;
