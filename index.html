@@ -49,7 +49,7 @@
     .stat-label { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 0.05em; }
     .section-title { font-size: 1rem; font-weight: 500; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #e8e6e3; }
     .book-rank { font-size: 14px; color: #999; margin-right: 12px; min-width: 30px; }
-    .format-selector { display: flex; gap: 8px; justify-content: center; }
+    .format-selector { display: flex; gap: 8px; }
     .format-btn { padding: 8px 16px; border: 2px solid #ddd; background: #fff; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
     .format-btn:hover { border-color: #999; }
     .format-btn.selected { border-color: #2D3E50; background: #f0f4f8; }
@@ -158,8 +158,17 @@
     }
     function saveBook() {
       if (!form.title.trim()) { error = 'Title required'; render(); return; }
-      const rating = form.rating === '' || form.rating === null ? null : parseInt(form.rating);
-      const pageCount = form.pageCount === '' || form.pageCount === null ? null : parseInt(form.pageCount);
+      
+      // Read values directly from DOM to avoid re-rendering issues
+      const pageCountInput = document.querySelector('input[placeholder="Number of pages"]');
+      const ratingInput = document.querySelector('input[placeholder="Leave blank if unrated"]');
+      
+      const ratingValue = ratingInput ? ratingInput.value.trim() : '';
+      const pageCountValue = pageCountInput ? pageCountInput.value.trim() : '';
+      
+      const rating = ratingValue !== '' ? parseInt(ratingValue) : null;
+      const pageCount = pageCountValue !== '' ? parseInt(pageCountValue) : null;
+      
       if (editingBook) {
         books = books.map(b => b.id === editingBook.id ? { ...form, id: b.id, year: parseInt(form.year) || null, rating, pageCount } : b);
       } else {
@@ -172,6 +181,17 @@
     function goBack() { view = 'list'; resetForm(); render(); }
     function setYear(y) { yearFilter = y; render(); }
     function setFormat(f) { form.format = f; render(); }
+    
+    function exportData() {
+      const dataStr = JSON.stringify(books, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `pages-turned-backup-${new Date().toISOString().split('T')[0]}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
 
     function ratingCircle(r) {
       const color = getColor(r);
@@ -203,7 +223,7 @@
         </header>
         <div class="container">
           <div class="top-bar">
-            <div></div>
+            <button class="btn btn-secondary btn-small" onclick="exportData()">📥 Backup Data</button>
             <button class="btn" onclick="openAdd()">+ Add Book</button>
           </div>
           <div class="card stats">
@@ -258,6 +278,7 @@
           <button class="back-link" onclick="goBack()">← Back</button>
           <h1 style="font-family:'Libre Baskerville',serif;font-size:1.4rem;font-weight:400;margin:20px 0">${editingBook ? 'Edit Book' : 'Add Book'}</h1>
           <div class="card">
+            ${!editingBook ? `
             <div class="form-group">
               <label>Import from ISBN</label>
               <div style="display:flex;gap:8px">
@@ -267,6 +288,7 @@
               ${error ? `<p class="error">${error}</p>` : ''}
             </div>
             <hr style="border:none;border-top:1px solid #eee;margin:20px 0">
+            ` : ''}
             ${form.cover ? `<div style="text-align:center;margin-bottom:16px"><img src="${form.cover}" style="height:120px;border-radius:4px" onerror="this.style.display='none'"></div>` : ''}
             <div class="form-group">
               <label>Title *</label>
