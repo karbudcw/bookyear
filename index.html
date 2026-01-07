@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V1.1 - Enhanced review styling -->
+  <!-- V1.2 - Refined review styling -->
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -37,32 +37,14 @@
     .book-author { color: #666; font-size: 0.85rem; margin-bottom: 4px; }
     .book-date-read { color: #666; font-size: 0.85rem; margin-bottom: 8px; }
     
-    /* V1.1 Review Styling */
-    .book-review-wrapper {
-      margin-top: 12px;
-      padding: 10px 14px 10px 28px;
-      background: #f8f7f5;
-      border-radius: 0 6px 6px 0;
-      border-left: 4px solid #2D3E50;
-      position: relative;
-    }
-    .book-review-quote {
-      position: absolute;
-      left: 9px;
-      top: 5px;
-      font-family: Georgia, serif;
-      font-size: 1.5rem;
-      color: #2D3E50;
-      opacity: 0.25;
-      line-height: 1;
-    }
+    /* V1.2 Review Styling - Clean italic serif */
     .book-review {
       font-family: 'Libre Baskerville', serif;
       font-style: italic;
-      font-size: 0.95rem;
+      font-size: 1.05rem;
       color: #2D3E50;
       line-height: 1.5;
-      margin: 0;
+      margin-top: 10px;
     }
     
     .book-actions { display: flex; gap: 8px; align-items: flex-start; }
@@ -89,16 +71,14 @@
       .book-actions { flex-direction: column; }
       nav { gap: 6px; }
       nav button { padding: 6px 12px; font-size: 13px; }
-      .book-review-wrapper { padding: 10px 12px 10px 24px; }
-      .book-review-quote { font-size: 1.3rem; left: 7px; }
-      .book-review { font-size: 0.9rem; }
+      .book-review { font-size: 1rem; }
     }
   </style>
 </head>
 <body>
   <div id="app"><div class="loading">Loading...</div></div>
   <script>
-    // V1.1 - Pages Turned
+    // V1.2 - Pages Turned
     let books = [];
     let view = 'list';
     let yearFilter = 'current';
@@ -284,13 +264,10 @@
       return `<div class="${cls}" style="background:${color};box-shadow:0 3px 10px ${color}44">${label}</div>`;
     }
 
-    // V1.1 - New review rendering with styled wrapper
+    // V1.2 - Simple review rendering
     function renderReview(review) {
       if (!review) return '';
-      return `<div class="book-review-wrapper">
-        <span class="book-review-quote">"</span>
-        <p class="book-review">${review}</p>
-      </div>`;
+      return `<p class="book-review">${review}</p>`;
     }
 
     function filterBooks() {
