@@ -114,9 +114,9 @@
     };
 
     const getFormatEmoji = f => {
-      if (f === 'ebook') return '📱';
-      if (f === 'audiobook') return '🎧';
-      return '📖';
+      if (f === 'ebook') return 'ðŸ“±';
+      if (f === 'audiobook') return 'ðŸŽ§';
+      return 'ðŸ“–';
     };
 
     const formatDateRead = d => {
@@ -244,7 +244,15 @@
     }
     function goBack() { view = 'list'; resetForm(); render(); }
     function setYear(y) { yearFilter = y; render(); }
-    function setFormat(f) { form.format = f; render(); }
+    function setFormat(f) {
+      // Update format without re-rendering to preserve form data
+      form.format = f;
+      // Update button styling directly
+      document.querySelectorAll('.format-btn').forEach(btn => {
+        btn.classList.remove('selected');
+      });
+      event.target.classList.add('selected');
+    }
     
     function exportData() {
       const dataStr = JSON.stringify(books, null, 2);
@@ -259,7 +267,7 @@
 
     function ratingCircle(r) {
       const color = getColor(r);
-      const label = r === null ? '—' : r;
+      const label = r === null ? 'â€”' : r;
       const cls = r === null ? 'rating-circle rating-unrated' : 'rating-circle';
       return `<div class="${cls}" style="background:${color};box-shadow:0 3px 10px ${color}44">${label}</div>`;
     }
@@ -287,7 +295,7 @@
       
       // Calculate stats based on filtered books for current view
       const rated = filtered.filter(b => b.rating !== null);
-      const avg = rated.length ? (rated.reduce((s,b) => s + b.rating, 0) / rated.length).toFixed(0) : '—';
+      const avg = rated.length ? (rated.reduce((s,b) => s + b.rating, 0) / rated.length).toFixed(0) : 'â€”';
       const totalPages = filtered.reduce((sum, b) => sum + (b.pageCount || 0), 0);
 
       let html = `
@@ -297,7 +305,7 @@
             ${years.map(y => {
               let label;
               if (y === 'current') label = 'Current Year';
-              else if (y === 'rankings') label = '🏆 All Time';
+              else if (y === 'rankings') label = 'ðŸ† All Time';
               else label = y;
               return `<button class="${yearFilter === y ? 'active' : ''}" onclick="setYear('${y}')">${label}</button>`;
             }).join('')}
@@ -305,7 +313,7 @@
         </header>
         <div class="container">
           <div class="top-bar">
-            ${isAdmin ? '<button class="btn btn-secondary btn-small" onclick="exportData()">📥 Backup Data</button>' : '<div></div>'}
+            ${isAdmin ? '<button class="btn btn-secondary btn-small" onclick="exportData()">ðŸ“¥ Backup Data</button>' : '<div></div>'}
             ${isAdmin ? '<button class="btn" onclick="openAdd()">+ Add Book</button>' : ''}
           </div>
           <div class="card stats">
@@ -359,7 +367,7 @@
     function renderEdit() {
       return `
         <div class="container" style="padding-top:32px">
-          <button class="back-link" onclick="goBack()">← Back</button>
+          <button class="back-link" onclick="goBack()">â† Back</button>
           <h1 style="font-family:'Libre Baskerville',serif;font-size:1.4rem;font-weight:400;margin:20px 0">${editingBook ? 'Edit Book' : 'Add Book'}</h1>
           <div class="card">
             ${!editingBook ? `
@@ -395,9 +403,9 @@
             <div class="form-group">
               <label>Format</label>
               <div class="format-selector">
-                <button class="format-btn ${form.format === 'physical' ? 'selected' : ''}" onclick="setFormat('physical')">📖 Physical</button>
-                <button class="format-btn ${form.format === 'ebook' ? 'selected' : ''}" onclick="setFormat('ebook')">📱 eBook</button>
-                <button class="format-btn ${form.format === 'audiobook' ? 'selected' : ''}" onclick="setFormat('audiobook')">🎧 Audiobook</button>
+                <button class="format-btn ${form.format === 'physical' ? 'selected' : ''}" onclick="setFormat('physical')">ðŸ“– Physical</button>
+                <button class="format-btn ${form.format === 'ebook' ? 'selected' : ''}" onclick="setFormat('ebook')">ðŸ“± eBook</button>
+                <button class="format-btn ${form.format === 'audiobook' ? 'selected' : ''}" onclick="setFormat('audiobook')">ðŸŽ§ Audiobook</button>
               </div>
             </div>
             <div class="form-row">
