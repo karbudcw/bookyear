@@ -65,7 +65,7 @@
     .stat-label { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 0.05em; }
     .stat-with-tooltip { position: relative; }
     .stat-with-tooltip:hover::after { content: '1-100 scale'; position: absolute; bottom: -24px; left: 50%; transform: translateX(-50%); background: #2D3E50; color: white; padding: 4px 12px; border-radius: 4px; font-size: 12px; white-space: nowrap; z-index: 100; }
-    .section-title { font-size: 1rem; font-weight: 500; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #e8e6e3; }
+    .section-title { font-size: 1rem; font-weight: 500; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #e8e6e3; color: #2D3E50; }
     .book-rank { font-size: 14px; color: #999; margin-right: 12px; min-width: 30px; }
     .format-selector { display: flex; gap: 8px; }
     .format-btn { padding: 8px 16px; border: 2px solid #ddd; background: #fff; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
@@ -352,7 +352,7 @@
 
     function ratingCircle(r) {
       const color = getColor(r);
-      const label = r === null ? 'â€”' : r;
+      const label = r === null ? '—' : r;
       const cls = r === null ? 'rating-circle rating-unrated' : 'rating-circle';
       return `<div class="${cls}" style="background:${color};box-shadow:0 3px 10px ${color}44">${label}</div>`;
     }
@@ -463,11 +463,15 @@
             <div><div class="stat-number">${filtered.length}</div><div class="stat-label">Books</div></div>
             <div><div class="stat-number">${totalPages.toLocaleString()}</div><div class="stat-label">Pages</div></div>
             <div class="stat-with-tooltip"><div class="stat-number">${avg}</div><div class="stat-label">Avg Rating</div></div>
-            <div><div class="stat-number">${mostRecent && mostRecent.dateRead ? formatDateRead(mostRecent.dateRead) : '—'}</div><div class="stat-label">Last Finished</div></div>
+            <div><div class="stat-number">${mostRecent && mostRecent.dateRead ? (() => { const d = new Date(mostRecent.dateRead); return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)}`; })() : '—'}</div><div class="stat-label">Last Finished</div></div>
           </div>`;
 
-      if (yearFilter === 'rankings') {
-        html += `<h2 class="section-title">All-Time Rankings</h2>`;
+      // Add section title with year label
+      html += `<h2 class="section-title">${getYearLabel()}</h2>`;
+      
+      if (filtered.length === 0) {
+        html += '<div class="empty-state">No books found.</div>';
+      } else {
         filtered.forEach((book, i) => {
           html += `<div class="card book-card">
             <div class="book-rank">#${i + 1}</div>
@@ -479,32 +483,15 @@
               ${renderReview(book.review)}
             </div>
             ${ratingCircle(book.rating)}
+            ${isAdmin ? `<div class="book-actions">
+              <button class="btn btn-secondary btn-small" onclick="openEdit(books.find(b=>b.id===${book.id}))">Edit</button>
+              <button class="btn btn-danger btn-small" onclick="deleteBook(${book.id})">Delete</button>
+            </div>` : ''}
           </div>`;
         });
-      } else {
-        if (filtered.length === 0) {
-          html += '<div class="empty-state">No books found.</div>';
-        } else {
-          filtered.forEach(book => {
-            html += `<div class="card book-card">
-              <div class="book-cover">${book.cover ? `<img src="${book.cover}" onerror="this.parentElement.innerHTML=''">`  : ''}</div>
-              <div class="book-info">
-                <div class="book-title">${book.title}</div>
-                <p class="book-author">${book.author || ''}${book.year ? ` (${book.year})` : ''}</p>
-                ${book.dateRead ? `<p class="book-date-read">${formatDateRead(book.dateRead)} ${getFormatEmoji(book.format || 'physical')}</p>` : ''}
-                ${renderReview(book.review)}
-              </div>
-              ${ratingCircle(book.rating)}
-              ${isAdmin ? `<div class="book-actions">
-                <button class="btn btn-secondary btn-small" onclick="openEdit(books.find(b=>b.id===${book.id}))">Edit</button>
-                <button class="btn btn-danger btn-small" onclick="deleteBook(${book.id})">Delete</button>
-              </div>` : ''}
-            </div>`;
-          });
-        }
       }
       html += '</div>';
-      html += '<footer>Ratings based on a highly scientific formula best described as <em>whatever comes to mind</em>.</footer>';
+      html += '<footer>Ratings 1-100 based on a highly scientific formula. Best described as <em>whatever comes to mind</em>.</footer>';
       return html;
     }
 
