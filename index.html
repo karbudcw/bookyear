@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V1.3 - Added warm brown book logo with PT letters -->
+  <!-- V1.4 - UX improvements: mission statement, rankings on all views, navigation redesign, hover states, spacing -->
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -13,10 +13,12 @@
     header { padding: 40px 24px 12px; text-align: center; border-bottom: 1px solid #e8e6e3; }
     h1 { font-family: 'Libre Baskerville', serif; font-size: 2rem; font-weight: 400; margin-bottom: 0; }
     .subtitle { color: #666; font-size: 0.95rem; }
+    .mission { color: #888; font-size: 0.9rem; margin-top: 8px; font-style: italic; }
+    .mission { color: #888; font-size: 0.9rem; margin-top: 8px; font-style: italic; }
     nav { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
     nav button { background: none; border: 1px solid #ddd; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 14px; font-family: inherit; transition: all 0.2s; }
     nav button:hover { border-color: #999; }
-    nav button.active { background: #2D3E50; color: #fff; border-color: #2D3E50; }
+    nav button.active { background: #2D3E50; color: #fff; border-color: #2D3E50; font-weight: 500; }
     .btn { padding: 10px 20px; background: #2D3E50; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-family: inherit; }
     .btn:hover { background: #3d4e60; }
     .btn-secondary { background: #f5f5f5; color: #2D3E50; border: 1px solid #ddd; }
@@ -28,7 +30,8 @@
     label { font-size: 14px; color: #666; display: block; margin-bottom: 6px; }
     .form-group { margin-bottom: 16px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .card { background: #fff; border: 1px solid #e8e6e3; border-radius: 8px; padding: 20px; margin-bottom: 12px; }
+    .card { background: #fff; border: 1px solid #e8e6e3; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(45, 62, 80, 0.08); transition: all 0.2s ease; }
     .book-card { display: flex; gap: 16px; }
     .book-cover { width: 65px; height: 100px; background: #eee; border-radius: 4px; flex-shrink: 0; overflow: hidden; }
     .book-cover img { width: 100%; height: 100%; object-fit: cover; }
@@ -56,7 +59,8 @@
     .empty-state { text-align: center; padding: 60px 20px; color: #888; }
     .loading { text-align: center; padding: 40px; color: #888; }
     .error { color: #c44; font-size: 13px; margin-top: 8px; }
-    .stats { display: grid; grid-template-columns: repeat(4, 1fr); text-align: center; gap: 16px; margin-bottom: 24px; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); text-align: center; gap: 16px; margin-bottom: 24px; position: relative; }
+    .stats:hover::after { content: '1-100 scale'; position: absolute; bottom: -24px; left: 50%; transform: translateX(-50%); background: #2D3E50; color: white; padding: 4px 12px; border-radius: 4px; font-size: 12px; white-space: nowrap; }
     .stat-number { font-family: 'Libre Baskerville', serif; font-size: 1.75rem; color: #2D3E50; }
     .stat-label { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 0.05em; }
     .section-title { font-size: 1rem; font-weight: 500; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #e8e6e3; }
@@ -65,6 +69,26 @@
     .format-btn { padding: 8px 16px; border: 2px solid #ddd; background: #fff; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
     .format-btn:hover { border-color: #999; }
     .format-btn.selected { border-color: #2D3E50; background: #f0f4f8; }
+    footer { text-align: center; padding: 40px 24px; border-top: 1px solid #e8e6e3; margin-top: 40px; color: #888; font-size: 0.9rem; line-height: 1.6; }
+    
+    /* Dropdown menu for Older years */
+    .dropdown { position: relative; display: inline-block; }
+    .dropdown-content { display: none; position: absolute; background: white; min-width: 120px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 8px; z-index: 1000; top: 100%; margin-top: 8px; border: 1px solid #e8e6e3; }
+    .dropdown-content button { display: block; width: 100%; text-align: left; padding: 10px 16px; border: none; background: none; cursor: pointer; font-size: 14px; font-family: inherit; transition: background 0.2s; border-radius: 0; }
+    .dropdown-content button:first-child { border-radius: 8px 8px 0 0; }
+    .dropdown-content button:last-child { border-radius: 0 0 8px 8px; }
+    .dropdown-content button:hover { background: #f5f5f5; }
+    .dropdown.active .dropdown-content { display: block; }
+    footer { text-align: center; padding: 40px 24px; border-top: 1px solid #e8e6e3; margin-top: 40px; color: #888; font-size: 0.9rem; line-height: 1.6; }
+    
+    /* Dropdown menu for Older years */
+    .dropdown { position: relative; display: inline-block; }
+    .dropdown-content { display: none; position: absolute; background: white; min-width: 120px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 8px; z-index: 1000; top: 100%; margin-top: 8px; border: 1px solid #e8e6e3; }
+    .dropdown-content button { display: block; width: 100%; text-align: left; padding: 10px 16px; border: none; background: none; cursor: pointer; font-size: 14px; font-family: inherit; transition: background 0.2s; border-radius: 0; }
+    .dropdown-content button:first-child { border-radius: 8px 8px 0 0; }
+    .dropdown-content button:last-child { border-radius: 0 0 8px 8px; }
+    .dropdown-content button:hover { background: #f5f5f5; }
+    .dropdown.active .dropdown-content { display: block; }
     
     /* Logo styles */
     .logo {
@@ -138,13 +162,14 @@
     // V1.3 - Pages Turned with warm brown book logo
     let books = [];
     let view = 'list';
-    let yearFilter = 'current';
+    let yearFilter = 'all-time'; // Changed default to all-time
     let editingBook = null;
     let form = { title: '', author: '', year: '', cover: '', rating: null, review: '', dateRead: '', isbn: '', pageCount: null, format: 'physical' };
     let isbnInput = '';
     let loading = true;
     let error = '';
     let isAdmin = false;
+    let dropdownOpen = false;
 
     // Check for admin mode via URL parameter with password
     const urlParams = new URLSearchParams(window.location.search);
@@ -171,9 +196,9 @@
     };
 
     const getFormatEmoji = f => {
-      if (f === 'ebook') return '📱';
-      if (f === 'audiobook') return '🎧';
-      return '📖';
+      if (f === 'ebook') return 'ðŸ“±';
+      if (f === 'audiobook') return 'ðŸŽ§';
+      return 'ðŸ“–';
     };
 
     const formatDateRead = d => {
@@ -300,7 +325,8 @@
       resetForm();
     }
     function goBack() { view = 'list'; resetForm(); render(); }
-    function setYear(y) { yearFilter = y; render(); }
+    function setYear(y) { yearFilter = y; dropdownOpen = false; render(); }
+    function toggleDropdown() { dropdownOpen = !dropdownOpen; render(); }
     function setFormat(f) {
       // Update format without re-rendering to preserve form data
       form.format = f;
@@ -324,7 +350,7 @@
 
     function ratingCircle(r) {
       const color = getColor(r);
-      const label = r === null ? '—' : r;
+      const label = r === null ? 'â€”' : r;
       const cls = r === null ? 'rating-circle rating-unrated' : 'rating-circle';
       return `<div class="${cls}" style="background:${color};box-shadow:0 3px 10px ${color}44">${label}</div>`;
     }
@@ -337,23 +363,60 @@
 
     function filterBooks() {
       const currentYear = new Date().getFullYear();
-      if (yearFilter === 'current') {
-        return books.filter(b => getYearGroup(b.dateRead) === String(currentYear)).sort((a,b) => (b.rating||0) - (a.rating||0));
+      let filtered;
+      
+      if (yearFilter === 'all-time') {
+        filtered = [...books];
+      } else if (yearFilter === 'current') {
+        filtered = books.filter(b => getYearGroup(b.dateRead) === String(currentYear));
+      } else {
+        filtered = books.filter(b => getYearGroup(b.dateRead) === yearFilter);
       }
-      if (yearFilter === 'rankings') return [...books].filter(b => b.rating !== null).sort((a,b) => b.rating - a.rating);
-      return books.filter(b => getYearGroup(b.dateRead) === yearFilter).sort((a,b) => (b.rating||0) - (a.rating||0));
+      
+      // Sort: rated books by rating (high to low), then unrated books alphabetically by title
+      return filtered.sort((a, b) => {
+        if (a.rating === null && b.rating === null) {
+          return (a.title || '').localeCompare(b.title || '');
+        }
+        if (a.rating === null) return 1;
+        if (b.rating === null) return -1;
+        return b.rating - a.rating;
+      });
+    }
+    
+    function getMostRecentBook() {
+      if (books.length === 0) return null;
+      return books.reduce((latest, book) => {
+        if (!book.dateRead) return latest;
+        if (!latest || !latest.dateRead) return book;
+        return new Date(book.dateRead) > new Date(latest.dateRead) ? book : latest;
+      }, null);
+    }
+    
+    function getYearLabel() {
+      const currentYear = new Date().getFullYear();
+      if (yearFilter === 'all-time') return 'All-Time Rankings';
+      if (yearFilter === 'current') return `${currentYear} Rankings`;
+      return `${yearFilter} Rankings`;
     }
 
     function renderList() {
       if (loading) return '<div class="loading">Loading...</div>';
       const currentYear = new Date().getFullYear();
-      const years = ['current', '2025', '2024', '2023', '2022', '2021', '2020', 'Older', 'rankings'];
       const filtered = filterBooks();
+      const mostRecent = getMostRecentBook();
       
       // Calculate stats based on filtered books for current view
       const rated = filtered.filter(b => b.rating !== null);
       const avg = rated.length ? (rated.reduce((s,b) => s + b.rating, 0) / rated.length).toFixed(0) : '—';
       const totalPages = filtered.reduce((sum, b) => sum + (b.pageCount || 0), 0);
+      
+      // Get available older years (excluding current, 2025, 2024)
+      const allYears = [...new Set(books.map(b => getYearGroup(b.dateRead)).filter(y => y !== 'Older' && y !== 'Unknown'))];
+      const olderYears = allYears.filter(y => {
+        const yearNum = parseInt(y);
+        return yearNum < currentYear && yearNum < 2025 && yearNum < 2024;
+      }).sort((a, b) => b - a);
 
       let html = `
         <header>
@@ -366,26 +429,39 @@
             </div>
             <div class="logo-text">Pages Turned</div>
           </div>
+          <p class="mission">Book Ratings. Short and Sweet.</p>
           <nav>
-            ${years.map(y => {
-              let label;
-              if (y === 'current') label = 'Current Year';
-              else if (y === 'rankings') label = '🏆 All Time';
-              else label = y;
-              return `<button class="${yearFilter === y ? 'active' : ''}" onclick="setYear('${y}')">${label}</button>`;
-            }).join('')}
-          </nav>
+            <button class="${yearFilter === 'all-time' ? 'active' : ''}" onclick="setYear('all-time')">All Time</button>
+            <button class="${yearFilter === 'current' ? 'active' : ''}" onclick="setYear('current')">Current Year</button>
+            <button class="${yearFilter === '2025' ? 'active' : ''}" onclick="setYear('2025')">2025</button>
+            <button class="${yearFilter === '2024' ? 'active' : ''}" onclick="setYear('2024')">2024</button>
+          </nav>`;
+      
+      // Add dropdown for older years if they exist
+      if (olderYears.length > 0) {
+        const dropdownHtml = `
+            <div class="dropdown ${dropdownOpen ? 'active' : ''}">
+              <button class="${olderYears.includes(yearFilter) ? 'active' : ''}" onclick="toggleDropdown()">Older</button>
+              <div class="dropdown-content">
+                ${olderYears.map(y => `<button onclick="setYear('${y}')">${y}</button>`).join('')}
+              </div>
+            </div>`;
+        // Insert dropdown before closing nav tag
+        html = html.replace('</nav>', dropdownHtml + '\n          </nav>');
+      }
+      
+      html += `
         </header>
         <div class="container">
           <div class="top-bar">
-            ${isAdmin ? '<button class="btn btn-secondary btn-small" onclick="exportData()">💾 Backup Data</button>' : '<div></div>'}
+            ${isAdmin ? '<button class="btn btn-secondary btn-small" onclick="exportData()">ðŸ’¾ Backup Data</button>' : '<div></div>'}
             ${isAdmin ? '<button class="btn" onclick="openAdd()">+ Add Book</button>' : ''}
           </div>
           <div class="card stats">
             <div><div class="stat-number">${filtered.length}</div><div class="stat-label">Books</div></div>
             <div><div class="stat-number">${totalPages.toLocaleString()}</div><div class="stat-label">Pages</div></div>
             <div><div class="stat-number">${avg}</div><div class="stat-label">Avg Rating</div></div>
-            <div><div class="stat-number">${filtered.filter(b => b.rating >= 90).length}</div><div class="stat-label">90+ Books</div></div>
+            <div><div class="stat-number">${mostRecent ? mostRecent.title.substring(0, 20) + (mostRecent.title.length > 20 ? '...' : '') : '—'}</div><div class="stat-label">Last Finished</div></div>
           </div>`;
 
       if (yearFilter === 'rankings') {
@@ -426,13 +502,14 @@
         }
       }
       html += '</div>';
+      html += '<footer>1-100 rating scale. No secret sauce other than my subjective view of overall impact.</footer>';
       return html;
     }
 
     function renderEdit() {
       return `
         <div class="container" style="padding-top:32px">
-          <button class="back-link" onclick="goBack()">← Back</button>
+          <button class="back-link" onclick="goBack()">â† Back</button>
           <h1 style="font-family:'Libre Baskerville',serif;font-size:1.4rem;font-weight:400;margin:20px 0">${editingBook ? 'Edit Book' : 'Add Book'}</h1>
           <div class="card">
             ${!editingBook ? `
@@ -468,9 +545,9 @@
             <div class="form-group">
               <label>Format</label>
               <div class="format-selector">
-                <button class="format-btn ${form.format === 'physical' ? 'selected' : ''}" onclick="setFormat('physical')">📖 Physical</button>
-                <button class="format-btn ${form.format === 'ebook' ? 'selected' : ''}" onclick="setFormat('ebook')">📱 eBook</button>
-                <button class="format-btn ${form.format === 'audiobook' ? 'selected' : ''}" onclick="setFormat('audiobook')">🎧 Audiobook</button>
+                <button class="format-btn ${form.format === 'physical' ? 'selected' : ''}" onclick="setFormat('physical')">ðŸ“– Physical</button>
+                <button class="format-btn ${form.format === 'ebook' ? 'selected' : ''}" onclick="setFormat('ebook')">ðŸ“± eBook</button>
+                <button class="format-btn ${form.format === 'audiobook' ? 'selected' : ''}" onclick="setFormat('audiobook')">ðŸŽ§ Audiobook</button>
               </div>
             </div>
             <div class="form-row">
