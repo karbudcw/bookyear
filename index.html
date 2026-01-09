@@ -4,19 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V1.6 - New logo image, simplified nav (one historical year + Older dropdown with dynamic label), Last Update with book title tooltip, larger section titles, mobile card layout improvements -->
+  <!-- V1.6.1 - Inline logo with nav, larger buttons, card shadows -->
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', system-ui, sans-serif; background: #faf9f7; color: #2D3E50; line-height: 1.6; }
     .container { max-width: 900px; margin: 0 auto; padding: 8px 24px 24px 24px; }
-    header { padding: 24px 24px 12px; text-align: center; border-bottom: 1px solid #e8e6e3; }
+    header { padding: 16px 24px; border-bottom: 1px solid #e8e6e3; }
+    .header-row { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; max-width: 900px; margin: 0 auto; }
     h1 { font-family: 'Libre Baskerville', serif; font-size: 2rem; font-weight: 400; margin-bottom: 0; }
     .subtitle { color: #666; font-size: 0.95rem; }
-    .mission { color: #888; font-size: 0.9rem; margin-top: 8px; font-style: italic; }
-    .mission { color: #888; font-size: 0.9rem; margin-top: 8px; font-style: italic; }
-    nav { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
-    nav button { background: none; border: 1px solid #ddd; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 14px; font-family: inherit; transition: all 0.2s; }
+    .mission { color: #888; font-size: 0.9rem; margin-top: 12px; font-style: italic; text-align: center; }
+    nav { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    nav button { background: none; border: 1px solid #ddd; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-size: 15px; font-family: inherit; transition: all 0.2s; }
     nav button:hover { border-color: #999; }
     nav button.active { background: #2D3E50; color: #fff; border-color: #2D3E50; font-weight: 500; }
     .btn { padding: 10px 20px; background: #2D3E50; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-family: inherit; }
@@ -95,22 +95,23 @@
     .dropdown-content button:hover { background: #f5f5f5; }
     .dropdown.active .dropdown-content { display: block; }
     
-    /* Logo image style */
+    /* Logo image style - inline with nav */
     .logo-image {
-      max-width: 320px;
+      height: 50px;
       width: auto;
-      height: auto;
     }
     
     /* Last Update tooltip */
     .stat-last-update { position: relative; cursor: help; }
     
     @media (max-width: 600px) {
+      .header-row { flex-direction: column; gap: 12px; }
+      .logo-image { height: 45px; }
+      nav { justify-content: center; }
+      nav button { padding: 8px 14px; font-size: 13px; }
       .form-row { grid-template-columns: 1fr; }
       .stats { grid-template-columns: repeat(2, 1fr); }
       .book-actions { flex-direction: column; }
-      nav { gap: 6px; }
-      nav button { padding: 6px 12px; font-size: 13px; }
       .book-review { font-size: 1rem; }
       /* Mobile book card layout - rank centered at top */
       .book-card { flex-wrap: wrap; position: relative; padding-top: 32px; }
@@ -400,25 +401,27 @@
 
       let html = `
         <header>
-          <img src="logo.png" alt="Pages Turned" class="logo-image">
-          <p class="mission">Book reviews that respect your time.</p>
-          <nav>
-            <button class="${yearFilter === 'all-time' ? 'active' : ''}" onclick="setYear('all-time')">🏆 All Time</button>
-            <button class="${yearFilter === 'current' ? 'active' : ''}" onclick="setYear('current')">Current Year</button>
-            <button class="${yearFilter === String(currentYear - 1) ? 'active' : ''}" onclick="setYear('${currentYear - 1}')">${currentYear - 1}</button>
-          </nav>`;
+          <div class="header-row">
+            <img src="logo.png" alt="Pages Turned" class="logo-image">
+            <nav>
+              <button class="${yearFilter === 'all-time' ? 'active' : ''}" onclick="setYear('all-time')">🏆 All Time</button>
+              <button class="${yearFilter === 'current' ? 'active' : ''}" onclick="setYear('current')">Current Year</button>
+              <button class="${yearFilter === String(currentYear - 1) ? 'active' : ''}" onclick="setYear('${currentYear - 1}')">${currentYear - 1}</button>
+            </nav>
+          </div>
+          <p class="mission">Book reviews that respect your time.</p>`;
       
       // Add dropdown for older years if they exist
       if (olderYears.length > 0) {
         const dropdownLabel = isOlderYearSelected ? yearFilter : 'Older';
         const dropdownHtml = `
-            <div class="dropdown ${dropdownOpen ? 'active' : ''}">
-              <button class="${isOlderYearSelected ? 'active' : ''}" onclick="toggleDropdown()">${dropdownLabel}</button>
-              <div class="dropdown-content">
-                ${olderYears.map(y => `<button onclick="setYear('${y}')">${y}</button>`).join('')}
-              </div>
-            </div>`;
-        html = html.replace('</nav>', dropdownHtml + '\n          </nav>');
+              <div class="dropdown ${dropdownOpen ? 'active' : ''}">
+                <button class="${isOlderYearSelected ? 'active' : ''}" onclick="toggleDropdown()">${dropdownLabel}</button>
+                <div class="dropdown-content">
+                  ${olderYears.map(y => `<button onclick="setYear('${y}')">${y}</button>`).join('')}
+                </div>
+              </div>`;
+        html = html.replace('</nav>', dropdownHtml + '\n            </nav>');
       }
       
       html += `
