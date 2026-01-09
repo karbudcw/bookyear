@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V1.6 - New logo image, simplified nav (one historical year + Older dropdown with dynamic label), Last Update with book title tooltip, larger section titles, mobile card layout improvements -->
+  <!-- V1.6.1 - Mobile rating circle centered -->
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -112,11 +112,12 @@
       nav { gap: 6px; }
       nav button { padding: 6px 12px; font-size: 13px; }
       .book-review { font-size: 1rem; }
-      /* Mobile book card layout - rank centered at top */
+      /* Mobile book card layout - rank centered at top, rating centered at bottom */
       .book-card { flex-wrap: wrap; position: relative; padding-top: 32px; }
       .book-card .book-rank { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); margin-right: 0; font-weight: 600; }
       .book-card .book-cover { width: 55px; height: 85px; }
       .book-card .book-info { min-width: calc(100% - 130px); }
+      .book-card .rating-circle { margin: 12px auto 0; }
     }
   </style>
 </head>
