@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V1.5 - Fixed Avg Rating hover tooltip, updated tagline, fixed Older dropdown -->
+  <!-- V1.6 - New logo image, simplified nav (one historical year + Older dropdown with dynamic label), Last Update with book title tooltip, larger section titles, mobile card layout improvements -->
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -65,7 +65,7 @@
     .stat-with-tooltip:hover::after { content: '1-100 scale'; position: absolute; bottom: -24px; left: 50%; transform: translateX(-50%); background: #2D3E50; color: white; padding: 4px 12px; border-radius: 4px; font-size: 12px; white-space: nowrap; z-index: 10; }
     .stat-number { font-family: 'Libre Baskerville', serif; font-size: 1.75rem; color: #2D3E50; }
     .stat-label { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 0.05em; }
-    .section-title { font-size: 1rem; font-weight: 500; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #e8e6e3; color: #2D3E50; }
+    .section-title { font-family: 'Libre Baskerville', serif; font-size: 1.35rem; font-weight: 500; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #e8e6e3; color: #2D3E50; }
     .book-rank { font-size: 14px; color: #999; margin-right: 12px; min-width: 30px; }
     .format-selector { display: flex; gap: 8px; }
     .format-btn { padding: 8px 16px; border: 2px solid #ddd; background: #fff; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
@@ -95,61 +95,14 @@
     .dropdown-content button:hover { background: #f5f5f5; }
     .dropdown.active .dropdown-content { display: block; }
     
-    /* Logo styles */
-    .logo {
-      display: inline-flex;
-      align-items: center;
-      gap: 14px;
-      white-space: nowrap;
+    /* Logo image style */
+    .logo-image {
+      max-width: 240px;
+      height: auto;
     }
-    .book-icon {
-      position: relative;
-      width: 50px;
-      height: 35px;
-      flex-shrink: 0;
-    }
-    .book-page {
-      position: absolute;
-      width: 24px;
-      height: 35px;
-      border-radius: 2px;
-    }
-    .book-page.left {
-      left: 0;
-      background: linear-gradient(to right, #8b6f47, #b8956a);
-      transform: skewY(-3deg);
-    }
-    .book-page.right {
-      right: 0;
-      background: linear-gradient(to left, #8b6f47, #b8956a);
-      transform: skewY(3deg);
-    }
-    .book-letter {
-      position: absolute;
-      font-family: 'Libre Baskerville', serif;
-      font-weight: 700;
-      font-size: 1.1rem;
-      color: white;
-      z-index: 10;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-    }
-    .book-letter.p-left {
-      left: 6px;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-    .book-letter.t-right {
-      right: 6px;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-    .logo-text {
-      font-family: 'Libre Baskerville', serif;
-      font-size: 2rem;
-      font-weight: 400;
-      color: #2D3E50;
-      white-space: nowrap;
-    }
+    
+    /* Last Update tooltip */
+    .stat-last-update { position: relative; cursor: help; }
     
     @media (max-width: 600px) {
       .form-row { grid-template-columns: 1fr; }
@@ -158,6 +111,11 @@
       nav { gap: 6px; }
       nav button { padding: 6px 12px; font-size: 13px; }
       .book-review { font-size: 1rem; }
+      /* Mobile book card layout - rank centered at top */
+      .book-card { flex-wrap: wrap; position: relative; padding-top: 32px; }
+      .book-card .book-rank { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); margin-right: 0; font-weight: 600; }
+      .book-card .book-cover { width: 55px; height: 85px; }
+      .book-card .book-info { min-width: calc(100% - 130px); }
     }
   </style>
 </head>
@@ -429,37 +387,32 @@
       const avg = rated.length ? (rated.reduce((s,b) => s + b.rating, 0) / rated.length).toFixed(0) : '—';
       const totalPages = filtered.reduce((sum, b) => sum + (b.pageCount || 0), 0);
       
-      // Get available older years (excluding current year and the two previous years shown in nav)
+      // Get available older years (excluding current year and one previous year shown in nav)
       const allYears = [...new Set(books.map(b => getYearGroup(b.dateRead)).filter(y => y !== 'Older' && y !== 'Unknown'))];
       const olderYears = allYears.filter(y => {
         const yearNum = parseInt(y);
-        return yearNum < currentYear - 2;
+        return yearNum < currentYear - 1;
       }).sort((a, b) => b - a);
+      
+      // Check if current yearFilter is an older year (for dynamic button label)
+      const isOlderYearSelected = olderYears.includes(yearFilter);
 
       let html = `
         <header>
-          <div class="logo">
-            <div class="book-icon">
-              <div class="book-page left"></div>
-              <div class="book-page right"></div>
-              <div class="book-letter p-left">P</div>
-              <div class="book-letter t-right">T</div>
-            </div>
-            <div class="logo-text">Pages Turned</div>
-          </div>
+          <img src="pages-turned-logo.png" alt="Pages Turned" class="logo-image">
           <p class="mission">Book reviews that respect your time.</p>
           <nav>
             <button class="${yearFilter === 'all-time' ? 'active' : ''}" onclick="setYear('all-time')">🏆 All Time</button>
             <button class="${yearFilter === 'current' ? 'active' : ''}" onclick="setYear('current')">Current Year</button>
             <button class="${yearFilter === String(currentYear - 1) ? 'active' : ''}" onclick="setYear('${currentYear - 1}')">${currentYear - 1}</button>
-            <button class="${yearFilter === String(currentYear - 2) ? 'active' : ''}" onclick="setYear('${currentYear - 2}')">${currentYear - 2}</button>
           </nav>`;
       
       // Add dropdown for older years if they exist
       if (olderYears.length > 0) {
+        const dropdownLabel = isOlderYearSelected ? yearFilter : 'Older';
         const dropdownHtml = `
             <div class="dropdown ${dropdownOpen ? 'active' : ''}">
-              <button class="${olderYears.includes(yearFilter) ? 'active' : ''}" onclick="toggleDropdown()">Older</button>
+              <button class="${isOlderYearSelected ? 'active' : ''}" onclick="toggleDropdown()">${dropdownLabel}</button>
               <div class="dropdown-content">
                 ${olderYears.map(y => `<button onclick="setYear('${y}')">${y}</button>`).join('')}
               </div>
@@ -478,7 +431,7 @@
             <div><div class="stat-number">${filtered.length}</div><div class="stat-label">Books</div></div>
             <div><div class="stat-number">${totalPages.toLocaleString()}</div><div class="stat-label">Pages</div></div>
             <div class="stat-with-tooltip"><div class="stat-number">${avg}</div><div class="stat-label">Avg Rating</div></div>
-            <div><div class="stat-number">${mostRecent && mostRecent.dateRead ? (() => { const d = new Date(mostRecent.dateRead); return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)}`; })() : '—'}</div><div class="stat-label">Last Finished</div></div>
+            <div class="stat-last-update" ${mostRecent ? `data-book="${mostRecent.title.replace(/"/g, '&quot;')}"` : ''}><div class="stat-number">${mostRecent && mostRecent.dateRead ? (() => { const d = new Date(mostRecent.dateRead); return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)}`; })() : '—'}</div><div class="stat-label">Last Update</div></div>
           </div>`;
 
       // Add section title with year label
@@ -605,6 +558,22 @@
       const app = document.getElementById('app');
       if (view === 'edit') app.innerHTML = renderEdit();
       else app.innerHTML = renderList();
+      
+      // Add tooltip for Last Update stat
+      const lastUpdateEl = document.querySelector('.stat-last-update');
+      if (lastUpdateEl && lastUpdateEl.dataset.book) {
+        lastUpdateEl.addEventListener('mouseenter', function() {
+          const tooltip = document.createElement('div');
+          tooltip.className = 'last-update-tooltip';
+          tooltip.textContent = this.dataset.book;
+          tooltip.style.cssText = 'position:absolute;bottom:-24px;left:50%;transform:translateX(-50%);background:#2D3E50;color:white;padding:4px 12px;border-radius:4px;font-size:12px;white-space:nowrap;z-index:10;';
+          this.appendChild(tooltip);
+        });
+        lastUpdateEl.addEventListener('mouseleave', function() {
+          const tooltip = this.querySelector('.last-update-tooltip');
+          if (tooltip) tooltip.remove();
+        });
+      }
     }
 
     loadBooks();
