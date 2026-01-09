@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V1.4 - UX improvements: mission statement, rankings on all views, navigation redesign, hover states, spacing -->
+  <!-- V1.5 - Fixed Avg Rating hover tooltip, updated tagline, fixed Older dropdown -->
   <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -60,8 +60,9 @@
     .empty-state { text-align: center; padding: 60px 20px; color: #888; }
     .loading { text-align: center; padding: 40px; color: #888; }
     .error { color: #c44; font-size: 13px; margin-top: 8px; }
-    .stats { display: grid; grid-template-columns: repeat(4, 1fr); text-align: center; gap: 16px; margin-bottom: 24px; position: relative; }
-    .stats:hover::after { content: '1-100 scale'; position: absolute; bottom: -24px; left: 50%; transform: translateX(-50%); background: #2D3E50; color: white; padding: 4px 12px; border-radius: 4px; font-size: 12px; white-space: nowrap; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); text-align: center; gap: 16px; margin-bottom: 24px; }
+    .stat-with-tooltip { position: relative; cursor: help; }
+    .stat-with-tooltip:hover::after { content: '1-100 scale'; position: absolute; bottom: -24px; left: 50%; transform: translateX(-50%); background: #2D3E50; color: white; padding: 4px 12px; border-radius: 4px; font-size: 12px; white-space: nowrap; z-index: 10; }
     .stat-number { font-family: 'Libre Baskerville', serif; font-size: 1.75rem; color: #2D3E50; }
     .stat-label { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 0.05em; }
     .section-title { font-size: 1rem; font-weight: 500; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #e8e6e3; color: #2D3E50; }
@@ -428,11 +429,11 @@
       const avg = rated.length ? (rated.reduce((s,b) => s + b.rating, 0) / rated.length).toFixed(0) : '—';
       const totalPages = filtered.reduce((sum, b) => sum + (b.pageCount || 0), 0);
       
-      // Get available older years (excluding current, 2025, 2024)
+      // Get available older years (excluding current year and the two previous years shown in nav)
       const allYears = [...new Set(books.map(b => getYearGroup(b.dateRead)).filter(y => y !== 'Older' && y !== 'Unknown'))];
       const olderYears = allYears.filter(y => {
         const yearNum = parseInt(y);
-        return yearNum < currentYear && yearNum < 2025 && yearNum < 2024;
+        return yearNum < currentYear - 2;
       }).sort((a, b) => b - a);
 
       let html = `
@@ -446,12 +447,12 @@
             </div>
             <div class="logo-text">Pages Turned</div>
           </div>
-          <p class="mission">Book Ratings. Short and Sweet.</p>
+          <p class="mission">Book reviews that respect your time.</p>
           <nav>
             <button class="${yearFilter === 'all-time' ? 'active' : ''}" onclick="setYear('all-time')">🏆 All Time</button>
             <button class="${yearFilter === 'current' ? 'active' : ''}" onclick="setYear('current')">Current Year</button>
-            <button class="${yearFilter === '2025' ? 'active' : ''}" onclick="setYear('2025')">2025</button>
-            <button class="${yearFilter === '2024' ? 'active' : ''}" onclick="setYear('2024')">2024</button>
+            <button class="${yearFilter === String(currentYear - 1) ? 'active' : ''}" onclick="setYear('${currentYear - 1}')">${currentYear - 1}</button>
+            <button class="${yearFilter === String(currentYear - 2) ? 'active' : ''}" onclick="setYear('${currentYear - 2}')">${currentYear - 2}</button>
           </nav>`;
       
       // Add dropdown for older years if they exist
@@ -460,7 +461,7 @@
             <div class="dropdown ${dropdownOpen ? 'active' : ''}">
               <button class="${olderYears.includes(yearFilter) ? 'active' : ''}" onclick="toggleDropdown()">Older</button>
               <div class="dropdown-content">
-0
+                ${olderYears.map(y => `<button onclick="setYear('${y}')">${y}</button>`).join('')}
               </div>
             </div>`;
         html = html.replace('</nav>', dropdownHtml + '\n          </nav>');
