@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V1.7.2 - Larger logo (72px), tighter text spacing -->
+  <!-- V1.7.4 - Smaller tagline, fixed emoji encoding -->
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -47,10 +47,10 @@
     .logo-section {
       display: flex;
       align-items: center;
-      gap: 0;
+      gap: 12px;
     }
     .logo-icon {
-      height: 95px;
+      height: 72px;
       width: auto;
     }
     .brand-text {
@@ -60,14 +60,14 @@
     }
     .brand-name {
       font-family: 'Libre Baskerville', serif;
-      font-size: 1.75rem;
+      font-size: 1.6rem;
       font-weight: 700;
       color: #2D3E50;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
     .tagline {
       color: #555;
-      font-size: 1.05rem;
+      font-size: 0.85rem;
     }
     
     nav { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
@@ -155,15 +155,16 @@
       }
       .logo-section {
         width: auto;
+        gap: 10px;
       }
       .logo-icon {
-        height: 100px;
+        height: 64px;
       }
       .brand-name {
-        font-size: 1.8rem;
+        font-size: 1.5rem;
       }
       .tagline {
-        font-size: 1.1rem;
+        font-size: 0.8rem;
       }
       nav {
         width: 100%;
@@ -223,6 +224,16 @@
     let isAdmin = false;
     let dropdownOpen = false;
 
+    // Emoji constants (unicode escapes to avoid encoding issues)
+    const EMOJI = {
+      trophy: '\u{1F3C6}',
+      book: '\u{1F4D6}',
+      phone: '\u{1F4F1}',
+      headphones: '\u{1F3A7}',
+      floppy: '\u{1F4BE}',
+      dash: '\u{2014}'
+    };
+
     // Check for admin mode via URL parameter with password
     const urlParams = new URLSearchParams(window.location.search);
     const adminPassword = 'CV!vxUCQvr*p47xNX@ZB';
@@ -261,9 +272,9 @@
     };
 
     const getFormatEmoji = f => {
-      if (f === 'ebook') return '📱';
-      if (f === 'audiobook') return '🎧';
-      return '📖';
+      if (f === 'ebook') return EMOJI.phone;
+      if (f === 'audiobook') return EMOJI.headphones;
+      return EMOJI.book;
     };
 
     const formatDateRead = d => {
@@ -415,7 +426,7 @@
 
     function ratingCircle(r) {
       const color = getColor(r);
-      const label = r === null ? '—' : r;
+      const label = r === null ? EMOJI.dash : r;
       const cls = r === null ? 'rating-circle rating-unrated' : 'rating-circle';
       return `<div class="${cls}" style="background:${color};box-shadow:0 3px 10px ${color}44">${label}</div>`;
     }
@@ -473,7 +484,7 @@
       
       // Calculate stats based on filtered books for current view
       const rated = filtered.filter(b => b.rating !== null);
-      const avg = rated.length ? (rated.reduce((s,b) => s + b.rating, 0) / rated.length).toFixed(0) : '—';
+      const avg = rated.length ? (rated.reduce((s,b) => s + b.rating, 0) / rated.length).toFixed(0) : EMOJI.dash;
       const totalPages = filtered.reduce((sum, b) => sum + (b.pageCount || 0), 0);
       
       // Get available older years (excluding current year and one previous year shown in nav)
@@ -497,7 +508,7 @@
             </div>
           </div>
           <nav>
-            <button class="${yearFilter === 'all-time' ? 'active' : ''}" onclick="setYear('all-time')">🏆 All Time</button>
+            <button class="${yearFilter === 'all-time' ? 'active' : ''}" onclick="setYear('all-time')">${EMOJI.trophy} All Time</button>
             <button class="${yearFilter === 'current' ? 'active' : ''}" onclick="setYear('current')">Current Year</button>
             <button class="${yearFilter === String(currentYear - 1) ? 'active' : ''}" onclick="setYear('${currentYear - 1}')">${currentYear - 1}</button>`;
       
@@ -519,14 +530,14 @@
         </div>
         <div class="container">
           <div class="top-bar">
-            ${isAdmin ? '<button class="btn btn-secondary btn-small" onclick="exportData()">💾 Backup Data</button>' : '<div></div>'}
+            ${isAdmin ? '<button class="btn btn-secondary btn-small" onclick="exportData()">' + EMOJI.floppy + ' Backup Data</button>' : '<div></div>'}
             ${isAdmin ? '<button class="btn" onclick="openAdd()">+ Add Book</button>' : ''}
           </div>
           <div class="card stats">
             <div><div class="stat-number">${filtered.length}</div><div class="stat-label">Books</div></div>
             <div><div class="stat-number">${totalPages.toLocaleString()}</div><div class="stat-label">Pages</div></div>
             <div class="stat-with-tooltip"><div class="stat-number">${avg}</div><div class="stat-label">Avg Rating</div></div>
-            <div class="stat-last-update" ${mostRecent ? `data-book="${mostRecent.title.replace(/"/g, '&quot;')}"` : ''}><div class="stat-number">${mostRecent && mostRecent.dateRead ? (() => { const d = new Date(mostRecent.dateRead); return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)}`; })() : '—'}</div><div class="stat-label">Last Update</div></div>
+            <div class="stat-last-update" ${mostRecent ? `data-book="${mostRecent.title.replace(/"/g, '&quot;')}"` : ''}><div class="stat-number">${mostRecent && mostRecent.dateRead ? (() => { const d = new Date(mostRecent.dateRead); return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)}`; })() : EMOJI.dash}</div><div class="stat-label">Last Update</div></div>
           </div>`;
 
       // Add section title with year label
@@ -587,7 +598,7 @@
     function renderEdit() {
       return `
         <div class="container" style="padding-top:32px">
-          <button class="back-link" onclick="goBack()">← Back</button>
+          <button class="back-link" onclick="goBack()">â† Back</button>
           <h1 style="font-family:'Libre Baskerville',serif;font-size:1.4rem;font-weight:400;margin:20px 0">${editingBook ? 'Edit Book' : 'Add Book'}</h1>
           <div class="card">
             ${!editingBook ? `
@@ -623,9 +634,9 @@
             <div class="form-group">
               <label>Format</label>
               <div class="format-selector">
-                <button class="format-btn ${form.format === 'physical' ? 'selected' : ''}" onclick="setFormat('physical')">📖 Physical</button>
-                <button class="format-btn ${form.format === 'ebook' ? 'selected' : ''}" onclick="setFormat('ebook')">📱 eBook</button>
-                <button class="format-btn ${form.format === 'audiobook' ? 'selected' : ''}" onclick="setFormat('audiobook')">🎧 Audiobook</button>
+                <button class="format-btn ${form.format === 'physical' ? 'selected' : ''}" onclick="setFormat('physical')">${EMOJI.book} Physical</button>
+                <button class="format-btn ${form.format === 'ebook' ? 'selected' : ''}" onclick="setFormat('ebook')">${EMOJI.phone} eBook</button>
+                <button class="format-btn ${form.format === 'audiobook' ? 'selected' : ''}" onclick="setFormat('audiobook')">${EMOJI.headphones} Audiobook</button>
               </div>
             </div>
             <div class="form-row">
