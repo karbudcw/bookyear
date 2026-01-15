@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V1.9.4 - Review styling: lighter metadata + quote mark, add Amazon URL field -->
+  <!-- V1.9.6 - Fix Amazon URL saving, move field under Cover URL -->
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -135,7 +135,7 @@
     .stat-number { font-family: 'Libre Baskerville', serif; font-size: 1.75rem; color: #2D3E50; }
     .stat-label { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 0.05em; }
     .section-title { font-family: 'Libre Baskerville', serif; font-size: 1.35rem; font-weight: 500; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #e8e6e3; color: #2D3E50; }
-    .book-rank { font-size: 14px; color: #999; margin-right: 12px; min-width: 30px; }
+    .book-rank { font-size: 14px; color: #999; min-width: 30px; text-align: center; }
     .format-selector { display: flex; gap: 8px; }
     .format-btn { padding: 8px 16px; border: 2px solid #ddd; background: #fff; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
     .format-btn:hover { border-color: #999; }
@@ -404,6 +404,7 @@
       const authorInputs = document.querySelectorAll('.form-row input');
       const yearInput = authorInputs[1]; // Second input in form-row
       const coverInput = document.querySelector('input[placeholder="https://..."]');
+      const amazonUrlInput = document.querySelector('input[placeholder="https://amazon.com/..."]');
       const dateReadInput = document.querySelector('input[type="date"]');
       const pageCountInput = document.querySelector('input[placeholder="Number of pages"]');
       const ratingInput = document.querySelector('input[placeholder="Leave blank if unrated"]');
@@ -422,6 +423,7 @@
       const author = authorEl ? authorEl.value.trim() : '';
       const year = yearEl ? parseInt(yearEl.value) || null : null;
       const cover = coverEl ? coverEl.value.trim() : '';
+      const amazonUrl = amazonUrlInput ? amazonUrlInput.value.trim() : '';
       const dateRead = dateReadInput ? dateReadInput.value : '';
       const pageCount = pageCountInput && pageCountInput.value.trim() !== '' ? parseInt(pageCountInput.value) : null;
       const rating = ratingInput && ratingInput.value.trim() !== '' ? parseInt(ratingInput.value) : null;
@@ -432,13 +434,13 @@
         author,
         year,
         cover,
+        amazonUrl,
         dateRead,
         pageCount,
         rating,
         review,
         format: form.format, // This one is safe since it's updated via button clicks
-        isbn: form.isbn || '', // ISBN doesn't have an input field when editing
-        amazonUrl: form.amazonUrl || ''
+        isbn: form.isbn || '' // ISBN doesn't have an input field when editing
       };
       
       if (editingBook) {
@@ -699,6 +701,10 @@
               <input type="text" value="${form.cover}" oninput="form.cover=this.value" placeholder="https://..." style="width:100%">
             </div>
             <div class="form-group">
+              <label>Amazon URL</label>
+              <input type="text" value="${form.amazonUrl}" oninput="form.amazonUrl=this.value" placeholder="https://amazon.com/..." style="width:100%">
+            </div>
+            <div class="form-group">
               <label>Format</label>
               <div class="format-selector">
                 <button class="format-btn ${form.format === 'physical' ? 'selected' : ''}" onclick="setFormat('physical')">${EMOJI.book} Physical</button>
@@ -723,10 +729,6 @@
             <div class="form-group">
               <label>Review</label>
               <textarea oninput="form.review=this.value" rows="4" style="width:100%">${form.review}</textarea>
-            </div>
-            <div class="form-group">
-              <label>Amazon URL</label>
-              <input type="text" value="${form.amazonUrl}" oninput="form.amazonUrl=this.value" placeholder="https://amazon.com/..." style="width:100%">
             </div>
             <button class="btn" onclick="saveBook()" style="width:100%">${editingBook ? 'Save Changes' : 'Add Book'}</button>
           </div>
