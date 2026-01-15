@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V1.9.3 - Review styling: quotation mark accent, no italics -->
+  <!-- V1.9.4 - Review styling: lighter metadata + quote mark, add Amazon URL field -->
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -95,10 +95,10 @@
     .book-title { font-family: 'Libre Baskerville', serif; font-size: 1.15rem; font-weight: 700; color: #2D3E50; margin-bottom: 6px; }
     .book-title-link { color: #2D3E50; text-decoration: none; }
     .book-title-link:hover { text-decoration: underline; }
-    .book-author { color: #666; font-size: 0.85rem; margin-bottom: 4px; }
-    .book-date-read { color: #666; font-size: 0.85rem; margin-bottom: 8px; }
+    .book-author { color: #888; font-size: 0.85rem; margin-bottom: 4px; }
+    .book-date-read { color: #999; font-size: 0.85rem; margin-bottom: 8px; }
     
-    /* V1.9.3 Review Styling - Quotation mark accent */
+    /* V1.9.4 Review Styling - Quotation mark accent with lighter metadata */
     .book-review {
       font-family: 'Libre Baskerville', serif;
       font-size: 1.05rem;
@@ -379,14 +379,14 @@
     }
 
     function resetForm() {
-      form = { title: '', author: '', year: '', cover: '', rating: null, review: '', dateRead: '', isbn: '', pageCount: null, format: 'physical' };
+      form = { title: '', author: '', year: '', cover: '', rating: null, review: '', dateRead: '', isbn: '', pageCount: null, format: 'physical', amazonUrl: '' };
       isbnInput = '';
       error = '';
     }
 
     function openAdd() { resetForm(); editingBook = null; view = 'edit'; render(); }
     function openEdit(book) {
-      form = { ...book, year: String(book.year || ''), rating: book.rating, pageCount: book.pageCount || null, format: book.format || 'physical' };
+      form = { ...book, year: String(book.year || ''), rating: book.rating, pageCount: book.pageCount || null, format: book.format || 'physical', amazonUrl: book.amazonUrl || '' };
       isbnInput = book.isbn || '';
       editingBook = book;
       view = 'edit';
@@ -437,7 +437,8 @@
         rating,
         review,
         format: form.format, // This one is safe since it's updated via button clicks
-        isbn: form.isbn || '' // ISBN doesn't have an input field when editing
+        isbn: form.isbn || '', // ISBN doesn't have an input field when editing
+        amazonUrl: form.amazonUrl || ''
       };
       
       if (editingBook) {
@@ -722,6 +723,10 @@
             <div class="form-group">
               <label>Review</label>
               <textarea oninput="form.review=this.value" rows="4" style="width:100%">${form.review}</textarea>
+            </div>
+            <div class="form-group">
+              <label>Amazon URL</label>
+              <input type="text" value="${form.amazonUrl}" oninput="form.amazonUrl=this.value" placeholder="https://amazon.com/..." style="width:100%">
             </div>
             <button class="btn" onclick="saveBook()" style="width:100%">${editingBook ? 'Save Changes' : 'Add Book'}</button>
           </div>
