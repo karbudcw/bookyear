@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V1.8.4 - Mobile: more spacing between rank and cover -->
+  <!-- V1.8.5 - Mobile: rank at top, cover and title aligned -->
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -184,7 +184,7 @@
       .book-actions { flex-direction: column; }
       .book-review { font-size: 1rem; }
       
-      /* Mobile book card layout - rank top aligned with title, cover below */
+      /* Mobile book card layout - rank at top, cover aligned with title */
       .book-card { 
         flex-wrap: wrap; 
         position: relative; 
@@ -202,11 +202,11 @@
       .book-card .book-cover { 
         width: 55px; 
         height: 85px; 
-        margin-top: 32px;
+        margin-top: 24px;
       }
       .book-card .book-info { 
         min-width: calc(100% - 130px);
-        margin-top: 0;
+        margin-top: 24px;
       }
       .book-card .rating-circle { 
         margin: 12px auto 0; 
