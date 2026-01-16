@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V1.9.7 - Navy quote mark, equal cover margins, fix back button -->
+  <!-- V1.9.8 - New wordmark logo with integrated P icon -->
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -31,14 +31,14 @@
     body { font-family: 'Inter', system-ui, sans-serif; background: #faf9f7; color: #2D3E50; line-height: 1.6; }
     .container { max-width: 900px; margin: 0 auto; padding: 8px 24px 24px 24px; }
     
-    /* New Header Layout - V1.7.1 */
+    /* Header Layout - V1.9.8 - New wordmark logo */
     header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       max-width: 900px;
       margin: 0 auto;
-      padding: 24px 24px;
+      padding: 20px 24px;
       gap: 24px;
     }
     .header-border {
@@ -46,28 +46,17 @@
     }
     .logo-section {
       display: flex;
-      align-items: center;
-      gap: 20px;
+      flex-direction: column;
+      gap: 6px;
     }
-    .logo-icon {
-      height: 90px;
+    .logo-wordmark {
+      height: 44px;
       width: auto;
     }
-    .brand-text {
-      display: flex;
-      flex-direction: column;
-      line-height: 1.2;
-    }
-    .brand-name {
-      font-family: 'Libre Baskerville', serif;
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: #2D3E50;
-      margin-bottom: 8px;
-    }
     .tagline {
-      color: #555;
-      font-size: 1.0rem;
+      color: #666;
+      font-size: 0.9rem;
+      letter-spacing: 0.01em;
     }
     
     nav { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
@@ -159,7 +148,7 @@
     .stat-last-update { position: relative; cursor: help; }
     
     @media (max-width: 600px) {
-      /* Mobile header layout - Option 3: icon on top, text stacked below, dropdown nav */
+      /* Mobile header layout - centered wordmark */
       header {
         flex-direction: column;
         align-items: center;
@@ -167,22 +156,15 @@
         gap: 0;
       }
       .logo-section {
-        flex-direction: column;
         align-items: center;
-        gap: 4px;
+        gap: 8px;
       }
-      .logo-icon {
-        height: 100px;
-      }
-      .brand-text {
-        text-align: center;
-      }
-      .brand-name {
-        font-size: 2.2rem;
-        margin-bottom: 4px;
+      .logo-wordmark {
+        height: 36px;
       }
       .tagline {
-        font-size: 1.1rem;
+        font-size: 0.85rem;
+        text-align: center;
       }
       
       /* Hide regular nav on mobile, show mobile dropdown */
@@ -208,7 +190,7 @@
         gap: 6px;
       }
       .mobile-nav-btn::after {
-        content: 'â–¼';
+        content: '▼';
         font-size: 10px;
       }
       .mobile-nav .dropdown-content {
@@ -563,11 +545,8 @@
         <div class="header-border">
         <header>
           <div class="logo-section">
-            <img src="icon.png" alt="Pages Turned" class="logo-icon">
-            <div class="brand-text">
-              <span class="brand-name">Pages Turned</span>
-              <span class="tagline">The TL;DR of book reviews</span>
-            </div>
+            <img src="sitelogo.png" alt="Pages Turned" class="logo-wordmark">
+            <span class="tagline">The TL;DR of book reviews</span>
           </div>
           <nav class="desktop-nav">
             <button class="${yearFilter === 'all-time' ? 'active' : ''}" onclick="setYear('all-time')">${EMOJI.trophy} All Time</button>
