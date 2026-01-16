@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V1.9.7 - Equal cover margins with increased spacing -->
+  <!-- V1.9.7 - Navy quote mark, equal cover margins, fix back button -->
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -98,7 +98,7 @@
     .book-author { color: #888; font-size: 0.85rem; margin-bottom: 4px; }
     .book-date-read { color: #999; font-size: 0.85rem; margin-bottom: 8px; }
     
-    /* V1.9.4 Review Styling - Quotation mark accent with lighter metadata */
+    /* V1.9.7 Review Styling - Navy quotation mark accent */
     .book-review {
       font-family: 'Libre Baskerville', serif;
       font-size: 1.05rem;
@@ -114,9 +114,10 @@
       left: 0;
       top: -4px;
       font-size: 2.5rem;
-      color: #ccc;
+      color: #2D3E50;
       font-family: Georgia, serif;
       line-height: 1;
+      opacity: 0.5;
     }
     
     .book-actions { display: flex; gap: 8px; align-items: flex-start; }
@@ -281,7 +282,8 @@
       phone: '\u{1F4F1}',
       headphones: '\u{1F3A7}',
       floppy: '\u{1F4BE}',
-      dash: '\u{2014}'
+      dash: '\u{2014}',
+      leftArrow: '\u{2190}'
     };
 
     // Check for admin mode via URL parameter with password
@@ -667,7 +669,7 @@
     function renderEdit() {
       return `
         <div class="container" style="padding-top:32px">
-          <button class="back-link" onclick="goBack()">Ã¢â€ Â Back</button>
+          <button class="back-link" onclick="goBack()">${EMOJI.leftArrow} Back</button>
           <h1 style="font-family:'Libre Baskerville',serif;font-size:1.4rem;font-weight:400;margin:20px 0">${editingBook ? 'Edit Book' : 'Add Book'}</h1>
           <div class="card">
             ${!editingBook ? `
