@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V1.9.8 - Gradient rating colors, ISBN fetches Amazon URL & page count, default date today, fix form saving -->
+  <!-- V1.9.8 - ISBN fetches Amazon URL & page count, default date today, fix form saving -->
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -295,31 +295,24 @@
 
     const getColor = r => {
       if (r === null) return '#ccc';
-      // Exceptional: 85-100 (greens, darker at top)
-      if (r >= 100) return '#15803d';
-      if (r >= 95) return '#16a34a';
-      if (r >= 90) return '#22c55e';
-      if (r >= 85) return '#4ade80';
-      // Good: 70-84 (pale greens, darker at top)
-      if (r >= 80) return '#86efac';
-      if (r >= 75) return '#a7f3d0';
-      if (r >= 70) return '#d1fae5';
-      // Fine: 55-69 (yellows, darker at bottom)
-      if (r >= 65) return '#fef9c3';
-      if (r >= 60) return '#fef08a';
-      if (r >= 55) return '#facc15';
-      // Disappointing: 40-54 (oranges, darker at bottom)
-      if (r >= 50) return '#fdba74';
-      if (r >= 45) return '#fb923c';
-      if (r >= 40) return '#f97316';
-      // Bad: 1-39 (reds, darker at bottom)
-      if (r >= 35) return '#f87171';
-      if (r >= 30) return '#ef4444';
-      if (r >= 25) return '#dc2626';
-      if (r >= 20) return '#b91c1c';
-      if (r >= 15) return '#991b1b';
-      if (r >= 10) return '#7f1d1d';
-      return '#450a0a';
+      // Greens: 80-100 (darker = higher)
+      if (r >= 95) return '#1B5E20';
+      if (r >= 90) return '#2E7D32';
+      if (r >= 85) return '#388E3C';
+      if (r >= 80) return '#43A047';
+      // Yellows: 70-79 (darker = lower)
+      if (r >= 75) return '#FBC02D';
+      if (r >= 70) return '#F9A825';
+      // Oranges: 60-69 (darker = lower)
+      if (r >= 65) return '#FB8C00';
+      if (r >= 60) return '#EF6C00';
+      // Reds: 0-59 (darker = lower)
+      if (r >= 50) return '#EF5350';
+      if (r >= 40) return '#F44336';
+      if (r >= 30) return '#E53935';
+      if (r >= 20) return '#D32F2F';
+      if (r >= 10) return '#C62828';
+      return '#B71C1C';
     };
 
     const getYear = d => d ? d.slice(0, 4) : 'Unknown';
@@ -493,9 +486,7 @@
       const color = getColor(r);
       const label = r === null ? EMOJI.dash : r;
       const cls = r === null ? 'rating-circle rating-unrated' : 'rating-circle';
-      // Use dark text for light backgrounds (pale greens 70-84, light yellows 65-69, light orange 50)
-      const textColor = (r !== null && ((r >= 70 && r < 85) || (r >= 65 && r < 70) || (r >= 50 && r < 55) || (r >= 35 && r < 40))) ? '#1a1a2e' : '#fff';
-      return `<div class="${cls}" style="background:${color};box-shadow:0 3px 10px ${color}44;color:${textColor}">${label}</div>`;
+      return `<div class="${cls}" style="background:${color};box-shadow:0 3px 10px ${color}44">${label}</div>`;
     }
 
     // V1.2 - Simple review rendering
@@ -654,24 +645,24 @@
       html += `<footer>
         <div class="rating-legend">
           <div class="rating-legend-item">
-            <div class="legend-circle" style="background:#22c55e;"></div>
-            <span>85-100: Pick it up</span>
+            <div class="legend-circle" style="background:#1B5E20;"></div>
+            <span>90-100: Pick it up now</span>
           </div>
           <div class="rating-legend-item">
-            <div class="legend-circle" style="background:#a7f3d0;"></div>
-            <span>70-84: Worth your time</span>
+            <div class="legend-circle" style="background:#43A047;"></div>
+            <span>80-89: Worth your time</span>
           </div>
           <div class="rating-legend-item">
-            <div class="legend-circle" style="background:#facc15;"></div>
-            <span>55-69: If you're bored</span>
+            <div class="legend-circle" style="background:#FBC02D;"></div>
+            <span>70-79: May strike a chord</span>
           </div>
           <div class="rating-legend-item">
-            <div class="legend-circle" style="background:#fb923c;"></div>
-            <span>40-54: Stay away</span>
+            <div class="legend-circle" style="background:#EF6C00;"></div>
+            <span>60-69: If you're bored</span>
           </div>
           <div class="rating-legend-item">
-            <div class="legend-circle" style="background:#ef4444;"></div>
-            <span>1-39: Don't even</span>
+            <div class="legend-circle" style="background:#B71C1C;"></div>
+            <span>0-59: Run away</span>
           </div>
         </div>
       </footer>`;
