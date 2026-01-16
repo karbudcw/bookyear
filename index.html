@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V1.9.6 - Fix Amazon URL saving, move field under Cover URL -->
+  <!-- V1.9.7 - Option A review styling (larger navy quote), equal cover margins -->
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -98,7 +98,7 @@
     .book-author { color: #888; font-size: 0.85rem; margin-bottom: 4px; }
     .book-date-read { color: #999; font-size: 0.85rem; margin-bottom: 8px; }
     
-    /* V1.9.4 Review Styling - Quotation mark accent with lighter metadata */
+    /* V1.9.7 Review Styling - Option A: Larger navy quote mark */
     .book-review {
       font-family: 'Libre Baskerville', serif;
       font-size: 1.05rem;
@@ -106,17 +106,18 @@
       line-height: 1.5;
       margin-top: 12px;
       position: relative;
-      padding-left: 24px;
+      padding-left: 32px;
     }
     .book-review::before {
       content: '"';
       position: absolute;
       left: 0;
-      top: -4px;
-      font-size: 2.5rem;
-      color: #ccc;
+      top: -8px;
+      font-size: 3.5rem;
+      color: #2D3E50;
       font-family: Georgia, serif;
       line-height: 1;
+      opacity: 0.7;
     }
     
     .book-actions { display: flex; gap: 8px; align-items: flex-start; }
@@ -135,7 +136,7 @@
     .stat-number { font-family: 'Libre Baskerville', serif; font-size: 1.75rem; color: #2D3E50; }
     .stat-label { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 0.05em; }
     .section-title { font-family: 'Libre Baskerville', serif; font-size: 1.35rem; font-weight: 500; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #e8e6e3; color: #2D3E50; }
-    .book-rank { font-size: 14px; color: #999; min-width: 30px; text-align: center; }
+    .book-rank { font-size: 14px; color: #999; width: 24px; flex-shrink: 0; text-align: right; margin-right: -4px; }
     .format-selector { display: flex; gap: 8px; }
     .format-btn { padding: 8px 16px; border: 2px solid #ddd; background: #fff; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
     .format-btn:hover { border-color: #999; }
@@ -207,7 +208,7 @@
         gap: 6px;
       }
       .mobile-nav-btn::after {
-        content: '▼';
+        content: 'â–¼';
         font-size: 10px;
       }
       .mobile-nav .dropdown-content {
@@ -667,7 +668,7 @@
     function renderEdit() {
       return `
         <div class="container" style="padding-top:32px">
-          <button class="back-link" onclick="goBack()">â† Back</button>
+          <button class="back-link" onclick="goBack()">Ã¢â€ Â Back</button>
           <h1 style="font-family:'Libre Baskerville',serif;font-size:1.4rem;font-weight:400;margin:20px 0">${editingBook ? 'Edit Book' : 'Add Book'}</h1>
           <div class="card">
             ${!editingBook ? `
