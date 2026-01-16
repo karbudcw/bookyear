@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V1.9.7 - Navy quote mark, equal cover margins, fix back button -->
+  <!-- V1.9.8 - Gradient rating colors, ISBN fetches Amazon URL & page count, default date today, fix form saving -->
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -283,7 +283,7 @@
       headphones: '\u{1F3A7}',
       floppy: '\u{1F4BE}',
       dash: '\u{2014}',
-      leftArrow: '\u{2190}'
+      leftArrow: '←'
     };
 
     // Check for admin mode via URL parameter with password
@@ -295,24 +295,31 @@
 
     const getColor = r => {
       if (r === null) return '#ccc';
-      // Greens: 80-100 (darker = higher)
-      if (r >= 95) return '#1B5E20';
-      if (r >= 90) return '#2E7D32';
-      if (r >= 85) return '#388E3C';
-      if (r >= 80) return '#43A047';
-      // Yellows: 70-79 (darker = lower)
-      if (r >= 75) return '#FBC02D';
-      if (r >= 70) return '#F9A825';
-      // Oranges: 60-69 (darker = lower)
-      if (r >= 65) return '#FB8C00';
-      if (r >= 60) return '#EF6C00';
-      // Reds: 0-59 (darker = lower)
-      if (r >= 50) return '#EF5350';
-      if (r >= 40) return '#F44336';
-      if (r >= 30) return '#E53935';
-      if (r >= 20) return '#D32F2F';
-      if (r >= 10) return '#C62828';
-      return '#B71C1C';
+      // Exceptional: 85-100 (greens, darker at top)
+      if (r >= 100) return '#15803d';
+      if (r >= 95) return '#16a34a';
+      if (r >= 90) return '#22c55e';
+      if (r >= 85) return '#4ade80';
+      // Good: 70-84 (pale greens, darker at top)
+      if (r >= 80) return '#86efac';
+      if (r >= 75) return '#a7f3d0';
+      if (r >= 70) return '#d1fae5';
+      // Fine: 55-69 (yellows, darker at bottom)
+      if (r >= 65) return '#fef9c3';
+      if (r >= 60) return '#fef08a';
+      if (r >= 55) return '#facc15';
+      // Disappointing: 40-54 (oranges, darker at bottom)
+      if (r >= 50) return '#fdba74';
+      if (r >= 45) return '#fb923c';
+      if (r >= 40) return '#f97316';
+      // Bad: 1-39 (reds, darker at bottom)
+      if (r >= 35) return '#f87171';
+      if (r >= 30) return '#ef4444';
+      if (r >= 25) return '#dc2626';
+      if (r >= 20) return '#b91c1c';
+      if (r >= 15) return '#991b1b';
+      if (r >= 10) return '#7f1d1d';
+      return '#450a0a';
     };
 
     const getYear = d => d ? d.slice(0, 4) : 'Unknown';
@@ -375,6 +382,9 @@
           form.year = b.publish_date?.match(/\d{4}/)?.[0] || form.year;
           form.cover = `https://covers.openlibrary.org/b/isbn/${isbnInput.trim()}-M.jpg`;
           form.isbn = isbnInput.trim();
+          form.pageCount = b.number_of_pages || form.pageCount;
+          // Generate Amazon affiliate URL from ISBN
+          form.amazonUrl = `https://www.amazon.com/dp/${isbnInput.trim()}?tag=pagesturned-20`;
         } else { error = 'Book not found.'; }
       } catch (e) { error = 'Failed to fetch.'; }
       render();
@@ -386,7 +396,14 @@
       error = '';
     }
 
-    function openAdd() { resetForm(); editingBook = null; view = 'edit'; render(); }
+    function openAdd() { 
+      resetForm(); 
+      // Default date read to today
+      form.dateRead = new Date().toISOString().split('T')[0];
+      editingBook = null; 
+      view = 'edit'; 
+      render(); 
+    }
     function openEdit(book) {
       form = { ...book, year: String(book.year || ''), rating: book.rating, pageCount: book.pageCount || null, format: book.format || 'physical', amazonUrl: book.amazonUrl || '' };
       isbnInput = book.isbn || '';
@@ -401,35 +418,28 @@
       }
     }
     function saveBook() {
-      // Read ALL values directly from DOM to avoid re-rendering issues
-      const titleInput = document.querySelector('input[placeholder=""]'); // Title input (first input without specific placeholder)
-      const authorInputs = document.querySelectorAll('.form-row input');
-      const yearInput = authorInputs[1]; // Second input in form-row
-      const coverInput = document.querySelector('input[placeholder="https://..."]');
-      const amazonUrlInput = document.querySelector('input[placeholder="https://amazon.com/..."]');
-      const dateReadInput = document.querySelector('input[type="date"]');
-      const pageCountInput = document.querySelector('input[placeholder="Number of pages"]');
-      const ratingInput = document.querySelector('input[placeholder="Leave blank if unrated"]');
-      const reviewTextarea = document.querySelector('textarea');
-      
-      // Get title - find it more reliably
-      const allInputs = document.querySelectorAll('input[type="text"]');
-      const titleEl = allInputs[0]; // First text input is title
-      const authorEl = allInputs[1]; // Second is author
-      const yearEl = allInputs[2]; // Third is year
-      const coverEl = allInputs[3]; // Fourth is cover URL
+      // Read values from form inputs by ID
+      const titleEl = document.getElementById('input-title');
+      const authorEl = document.getElementById('input-author');
+      const yearEl = document.getElementById('input-year');
+      const coverEl = document.getElementById('input-cover');
+      const amazonUrlEl = document.getElementById('input-amazonUrl');
+      const dateReadEl = document.getElementById('input-dateRead');
+      const pageCountEl = document.getElementById('input-pageCount');
+      const ratingEl = document.getElementById('input-rating');
+      const reviewEl = document.getElementById('input-review');
       
       const title = titleEl ? titleEl.value.trim() : '';
       if (!title) { error = 'Title required'; render(); return; }
       
       const author = authorEl ? authorEl.value.trim() : '';
-      const year = yearEl ? parseInt(yearEl.value) || null : null;
+      const year = yearEl && yearEl.value.trim() ? parseInt(yearEl.value) || null : null;
       const cover = coverEl ? coverEl.value.trim() : '';
-      const amazonUrl = amazonUrlInput ? amazonUrlInput.value.trim() : '';
-      const dateRead = dateReadInput ? dateReadInput.value : '';
-      const pageCount = pageCountInput && pageCountInput.value.trim() !== '' ? parseInt(pageCountInput.value) : null;
-      const rating = ratingInput && ratingInput.value.trim() !== '' ? parseInt(ratingInput.value) : null;
-      const review = reviewTextarea ? reviewTextarea.value.trim() : '';
+      const amazonUrl = amazonUrlEl ? amazonUrlEl.value.trim() : '';
+      const dateRead = dateReadEl ? dateReadEl.value : '';
+      const pageCount = pageCountEl && pageCountEl.value.trim() !== '' ? parseInt(pageCountEl.value) : null;
+      const rating = ratingEl && ratingEl.value.trim() !== '' ? parseInt(ratingEl.value) : null;
+      const review = reviewEl ? reviewEl.value.trim() : '';
       
       const bookData = {
         title,
@@ -441,8 +451,8 @@
         pageCount,
         rating,
         review,
-        format: form.format, // This one is safe since it's updated via button clicks
-        isbn: form.isbn || '' // ISBN doesn't have an input field when editing
+        format: form.format,
+        isbn: form.isbn || ''
       };
       
       if (editingBook) {
@@ -483,7 +493,9 @@
       const color = getColor(r);
       const label = r === null ? EMOJI.dash : r;
       const cls = r === null ? 'rating-circle rating-unrated' : 'rating-circle';
-      return `<div class="${cls}" style="background:${color};box-shadow:0 3px 10px ${color}44">${label}</div>`;
+      // Use dark text for light backgrounds (pale greens 70-84, light yellows 65-69, light orange 50)
+      const textColor = (r !== null && ((r >= 70 && r < 85) || (r >= 65 && r < 70) || (r >= 50 && r < 55) || (r >= 35 && r < 40))) ? '#1a1a2e' : '#fff';
+      return `<div class="${cls}" style="background:${color};box-shadow:0 3px 10px ${color}44;color:${textColor}">${label}</div>`;
     }
 
     // V1.2 - Simple review rendering
@@ -642,24 +654,24 @@
       html += `<footer>
         <div class="rating-legend">
           <div class="rating-legend-item">
-            <div class="legend-circle" style="background:#1B5E20;"></div>
-            <span>90-100: Pick it up now</span>
+            <div class="legend-circle" style="background:#22c55e;"></div>
+            <span>85-100: Pick it up</span>
           </div>
           <div class="rating-legend-item">
-            <div class="legend-circle" style="background:#43A047;"></div>
-            <span>80-89: Worth your time</span>
+            <div class="legend-circle" style="background:#a7f3d0;"></div>
+            <span>70-84: Worth your time</span>
           </div>
           <div class="rating-legend-item">
-            <div class="legend-circle" style="background:#FBC02D;"></div>
-            <span>70-79: May strike a chord</span>
+            <div class="legend-circle" style="background:#facc15;"></div>
+            <span>55-69: If you're bored</span>
           </div>
           <div class="rating-legend-item">
-            <div class="legend-circle" style="background:#EF6C00;"></div>
-            <span>60-69: If you're bored</span>
+            <div class="legend-circle" style="background:#fb923c;"></div>
+            <span>40-54: Stay away</span>
           </div>
           <div class="rating-legend-item">
-            <div class="legend-circle" style="background:#B71C1C;"></div>
-            <span>0-59: Run away</span>
+            <div class="legend-circle" style="background:#ef4444;"></div>
+            <span>1-39: Don't even</span>
           </div>
         </div>
       </footer>`;
@@ -686,25 +698,25 @@
             ${form.cover ? `<div style="text-align:center;margin-bottom:16px"><img src="${form.cover}" style="height:120px;border-radius:4px" onerror="this.style.display='none'"></div>` : ''}
             <div class="form-group">
               <label>Title *</label>
-              <input type="text" value="${form.title}" oninput="form.title=this.value" style="width:100%">
+              <input type="text" id="input-title" value="${form.title}" oninput="form.title=this.value" style="width:100%">
             </div>
             <div class="form-row">
               <div class="form-group">
                 <label>Author</label>
-                <input type="text" value="${form.author}" oninput="form.author=this.value" style="width:100%">
+                <input type="text" id="input-author" value="${form.author}" oninput="form.author=this.value" style="width:100%">
               </div>
               <div class="form-group">
                 <label>Year Published</label>
-                <input type="text" value="${form.year}" oninput="form.year=this.value" style="width:100%">
+                <input type="text" id="input-year" value="${form.year}" oninput="form.year=this.value" style="width:100%">
               </div>
             </div>
             <div class="form-group">
               <label>Cover URL</label>
-              <input type="text" value="${form.cover}" oninput="form.cover=this.value" placeholder="https://..." style="width:100%">
+              <input type="text" id="input-cover" value="${form.cover}" oninput="form.cover=this.value" placeholder="https://..." style="width:100%">
             </div>
             <div class="form-group">
               <label>Amazon URL</label>
-              <input type="text" value="${form.amazonUrl}" oninput="form.amazonUrl=this.value" placeholder="https://amazon.com/..." style="width:100%">
+              <input type="text" id="input-amazonUrl" value="${form.amazonUrl}" oninput="form.amazonUrl=this.value" placeholder="https://amazon.com/..." style="width:100%">
             </div>
             <div class="form-group">
               <label>Format</label>
@@ -717,20 +729,20 @@
             <div class="form-row">
               <div class="form-group">
                 <label>Date Read</label>
-                <input type="date" value="${form.dateRead}" oninput="form.dateRead=this.value">
+                <input type="date" id="input-dateRead" value="${form.dateRead}" oninput="form.dateRead=this.value">
               </div>
               <div class="form-group">
                 <label>Page Count</label>
-                <input type="number" min="1" value="${form.pageCount || ''}" oninput="form.pageCount=this.value" placeholder="Number of pages">
+                <input type="number" id="input-pageCount" min="1" value="${form.pageCount || ''}" oninput="form.pageCount=this.value" placeholder="Number of pages">
               </div>
             </div>
             <div class="form-group">
               <label>Rating (1-100)</label>
-              <input type="number" min="1" max="100" value="${form.rating || ''}" oninput="form.rating=this.value" placeholder="Leave blank if unrated">
+              <input type="number" id="input-rating" min="1" max="100" value="${form.rating || ''}" oninput="form.rating=this.value" placeholder="Leave blank if unrated">
             </div>
             <div class="form-group">
               <label>Review</label>
-              <textarea oninput="form.review=this.value" rows="4" style="width:100%">${form.review}</textarea>
+              <textarea id="input-review" oninput="form.review=this.value" rows="4" style="width:100%">${form.review}</textarea>
             </div>
             <button class="btn" onclick="saveBook()" style="width:100%">${editingBook ? 'Save Changes' : 'Add Book'}</button>
           </div>
