@@ -25,7 +25,7 @@
   <meta name="description" content="The TL;DR of book reviews. One-sentence reviews with a 1-100 rating system.">
   <meta name="theme-color" content="#2D3E50">
   
-  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&family=Architects+Daughter&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Inter', system-ui, sans-serif; background: #faf9f7; color: #2D3E50; line-height: 1.6; }
@@ -140,23 +140,19 @@
       width: 56px; 
       flex-shrink: 0; 
       text-align: center; 
-      line-height: 1; 
-      font-style: italic;
+      line-height: 1;
       display: flex;
       align-items: baseline;
       justify-content: center;
+      font-family: 'Architects Daughter', cursive;
+      font-size: 1.8rem;
+      color: #888;
     }
     .book-rank .hash {
-      font-family: 'Old Standard TT', serif;
-      font-size: 2.1rem;
       color: #bbb;
     }
     .book-rank .num {
-      font-family: 'Old Standard TT', serif;
-      font-size: 1.7rem;
-      font-weight: 700;
       color: #888;
-      font-variant-numeric: tabular-nums;
     }
     .format-selector { display: flex; gap: 8px; }
     .format-btn { padding: 8px 16px; border: 2px solid #ddd; background: #fff; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
@@ -261,13 +257,8 @@
         right: 0;
         width: 100%;
         text-align: center;
-        margin-right: 0; 
-      }
-      .book-card .book-rank .hash {
-        font-size: 1.8rem;
-      }
-      .book-card .book-rank .num {
-        font-size: 1.5rem;
+        margin-right: 0;
+        font-size: 1.6rem;
       }
       .book-card .book-cover { 
         width: 55px; 
