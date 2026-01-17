@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V2.0.7 - Add rating distribution chart to footer -->
+  <!-- V2.0.8 - Vertical distribution chart, fix mobile dropdown arrow -->
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -164,15 +164,15 @@
     .rating-legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
     .legend-circle { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0; }
     
-    /* Rating Distribution Chart */
-    .distribution-chart { max-width: 500px; margin: 0 auto 32px; }
-    .distribution-title { font-family: 'Libre Baskerville', serif; font-size: 1rem; color: #2D3E50; margin-bottom: 12px; }
-    .chart-bars { display: flex; flex-direction: column; gap: 6px; }
-    .bar-row { display: flex; align-items: center; gap: 8px; }
-    .bar-label { width: 50px; font-size: 0.75rem; color: #666; text-align: right; }
-    .bar-container { flex: 1; height: 20px; background: #f0f0f0; border-radius: 3px; overflow: hidden; }
-    .bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
-    .bar-count { width: 30px; font-size: 0.75rem; color: #888; }
+    /* Rating Distribution Chart - Vertical */
+    .distribution-chart { max-width: 400px; margin: 0 auto 32px; }
+    .distribution-title { font-family: 'Libre Baskerville', serif; font-size: 1rem; color: #2D3E50; margin-bottom: 16px; }
+    .chart-container { display: flex; align-items: flex-end; justify-content: space-between; height: 120px; padding: 0 10px; gap: 12px; }
+    .chart-bar-group { display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; }
+    .chart-bar-count { font-size: 0.7rem; color: #666; margin-bottom: 4px; }
+    .chart-bar { width: 100%; max-width: 48px; border-radius: 3px 3px 0 0; transition: height 0.3s ease; }
+    .chart-labels { display: flex; justify-content: space-between; padding: 8px 10px 0; gap: 12px; border-top: 1px solid #e8e6e3; }
+    .chart-labels span { flex: 1; text-align: center; font-size: 0.65rem; color: #888; }
     
     /* Dropdown menu for Older years */
     .dropdown { position: relative; display: inline-block; }
@@ -236,7 +236,7 @@
         gap: 6px;
       }
       .mobile-nav-btn::after {
-        content: 'â–¼';
+        content: '\u25BC';
         font-size: 10px;
       }
       .mobile-nav .dropdown-content {
@@ -699,16 +699,16 @@
       const distributionChart = `
         <div class="distribution-chart">
           <div class="distribution-title">Rating Distribution</div>
-          <div class="chart-bars">
+          <div class="chart-container">
             ${distribution.map(d => `
-              <div class="bar-row">
-                <span class="bar-label">${d.label}</span>
-                <div class="bar-container">
-                  <div class="bar-fill" style="width: ${(d.count / maxCount) * 100}%; background: ${d.color};"></div>
-                </div>
-                <span class="bar-count">${d.count}</span>
+              <div class="chart-bar-group">
+                <span class="chart-bar-count">${d.count}</span>
+                <div class="chart-bar" style="height: ${(d.count / maxCount) * 100}%; background: ${d.color};"></div>
               </div>
             `).join('')}
+          </div>
+          <div class="chart-labels">
+            ${distribution.map(d => `<span>${d.label}</span>`).join('')}
           </div>
         </div>
       `;
