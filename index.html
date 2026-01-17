@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V2.0.6 - Revert stats to match book cards, add spacing -->
+  <!-- V2.0.7 - Add rating distribution chart to footer -->
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -163,6 +163,16 @@
     .rating-legend { display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: center; gap: 16px; margin-top: 12px; }
     .rating-legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
     .legend-circle { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0; }
+    
+    /* Rating Distribution Chart */
+    .distribution-chart { max-width: 500px; margin: 0 auto 32px; }
+    .distribution-title { font-family: 'Libre Baskerville', serif; font-size: 1rem; color: #2D3E50; margin-bottom: 12px; }
+    .chart-bars { display: flex; flex-direction: column; gap: 6px; }
+    .bar-row { display: flex; align-items: center; gap: 8px; }
+    .bar-label { width: 50px; font-size: 0.75rem; color: #666; text-align: right; }
+    .bar-container { flex: 1; height: 20px; background: #f0f0f0; border-radius: 3px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
+    .bar-count { width: 30px; font-size: 0.75rem; color: #888; }
     
     /* Dropdown menu for Older years */
     .dropdown { position: relative; display: inline-block; }
@@ -666,7 +676,45 @@
         });
       }
       html += '</div>';
+      
+      // Generate rating distribution data
+      const distribution = [
+        { label: '90-100', min: 90, max: 100, color: '#1B5E20', count: 0 },
+        { label: '80-89', min: 80, max: 89, color: '#43A047', count: 0 },
+        { label: '70-79', min: 70, max: 79, color: '#FBC02D', count: 0 },
+        { label: '60-69', min: 60, max: 69, color: '#EF6C00', count: 0 },
+        { label: '50-59', min: 50, max: 59, color: '#EF5350', count: 0 },
+        { label: '0-49', min: 0, max: 49, color: '#B71C1C', count: 0 }
+      ];
+      
+      filtered.forEach(book => {
+        if (book.rating !== null) {
+          const bucket = distribution.find(d => book.rating >= d.min && book.rating <= d.max);
+          if (bucket) bucket.count++;
+        }
+      });
+      
+      const maxCount = Math.max(...distribution.map(d => d.count), 1);
+      
+      const distributionChart = `
+        <div class="distribution-chart">
+          <div class="distribution-title">Rating Distribution</div>
+          <div class="chart-bars">
+            ${distribution.map(d => `
+              <div class="bar-row">
+                <span class="bar-label">${d.label}</span>
+                <div class="bar-container">
+                  <div class="bar-fill" style="width: ${(d.count / maxCount) * 100}%; background: ${d.color};"></div>
+                </div>
+                <span class="bar-count">${d.count}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      
       html += `<footer>
+        ${distributionChart}
         <div class="rating-legend">
           <div class="rating-legend-item">
             <div class="legend-circle" style="background:#1B5E20;"></div>
