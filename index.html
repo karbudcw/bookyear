@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V2.9.1 - Increased card top/bottom margins -->
+  <!-- V3.0 - Desktop: new two-row card layout (metadata row + review row) -->
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -86,9 +86,11 @@
     label { font-size: 14px; color: #666; display: block; margin-bottom: 6px; }
     .form-group { margin-bottom: 16px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .card { background: #fff; border: 1px solid #e8e6e3; border-radius: 8px; padding: 20px; margin-top: 20px; margin-bottom: 36px; box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+    .card { background: #fff; border: 1px solid #e8e6e3; border-radius: 8px; padding: 24px; margin-top: 20px; margin-bottom: 36px; box-shadow: 0 4px 12px rgba(0,0,0,0.12); max-width: 760px; }
     .card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(45, 62, 80, 0.15); transition: all 0.3s ease; }
-    .book-card { display: flex; gap: 16px; align-items: flex-start; }
+    .book-card { display: flex; flex-direction: column; gap: 20px; }
+    .book-card-row1 { display: flex; gap: 16px; align-items: flex-start; }
+    .book-card-row2 { margin-left: 60px; }
     .book-cover { width: 65px; height: 100px; background: #eee; border-radius: 4px; flex-shrink: 0; overflow: hidden; margin: 0 4px; }
     .book-cover a { display: block; width: 100%; height: 100%; }
     .book-cover img { width: 100%; height: 100%; object-fit: cover; }
@@ -99,13 +101,13 @@
     .book-author { color: #888; font-size: 0.85rem; margin-bottom: 4px; }
     .book-date-read { color: #999; font-size: 0.85rem; margin-bottom: 0; }
     
-    /* V2.10 Review Styling - Inside book-info, text aligns with title naturally */
+    /* V3.0 Review Styling - In its own row on desktop */
     .book-review {
       font-family: 'Libre Baskerville', serif;
       font-size: 1.05rem;
       color: #2D3E50;
       line-height: 1.5;
-      margin-top: 10px;
+      margin-top: 0;
       position: relative;
       padding-left: 24px;
     }
@@ -138,7 +140,7 @@
     .stat-label { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 0.05em; }
     .section-title { font-family: 'Libre Baskerville', serif; font-size: 1.35rem; font-weight: 500; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #e8e6e3; color: #2D3E50; }
     .book-rank { 
-      width: 56px; 
+      width: 44px; 
       flex-shrink: 0; 
       text-align: center; 
       line-height: 1;
@@ -255,11 +257,24 @@
         margin-top: 12px;
       }
       
-      /* Mobile book card layout - rank centered at top of card */
-      .book-card { 
-        flex-wrap: wrap; 
-        position: relative; 
+      /* Mobile book card layout - override desktop two-row, keep original mobile layout */
+      .card.book-card {
+        max-width: 100%;
+        padding: 20px;
         padding-top: 64px;
+      }
+      .book-card { 
+        display: block;
+        position: relative; 
+      }
+      .book-card-row1 {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+      .book-card-row2 {
+        margin-left: 0;
+        margin-top: 12px;
       }
       .book-card .book-rank { 
         position: absolute; 
@@ -667,16 +682,19 @@
               ? `<a href="${book.amazonUrl}" target="_blank" rel="noopener"><img src="${book.cover}" onerror="this.parentElement.parentElement.innerHTML=''"></a>`
               : `<img src="${book.cover}" onerror="this.parentElement.innerHTML=''">`
             ) : '';
+          const reviewHtml = book.review ? `<div class="book-card-row2">${renderReview(book.review)}</div>` : '';
           html += `<div class="card book-card">
-            <div class="book-rank"><span class="hash">#</span><span class="num">${i + 1}</span></div>
-            <div class="book-cover">${coverHtml}</div>
-            <div class="book-info">
-              <div class="book-title">${titleHtml}</div>
-              <p class="book-author">${book.author || ''}${book.year ? ` (${book.year})` : ''}</p>
-              ${book.dateRead ? `<p class="book-date-read">${formatDateRead(book.dateRead)} ${getFormatEmoji(book.format || 'physical')}</p>` : ''}
-              ${renderReview(book.review)}
+            <div class="book-card-row1">
+              <div class="book-rank"><span class="hash">#</span><span class="num">${i + 1}</span></div>
+              <div class="book-cover">${coverHtml}</div>
+              <div class="book-info">
+                <div class="book-title">${titleHtml}</div>
+                <p class="book-author">${book.author || ''}${book.year ? ` (${book.year})` : ''}</p>
+                ${book.dateRead ? `<p class="book-date-read">${formatDateRead(book.dateRead)} ${getFormatEmoji(book.format || 'physical')}</p>` : ''}
+              </div>
+              ${ratingCircle(book.rating)}
             </div>
-            ${ratingCircle(book.rating)}
+            ${reviewHtml}
             ${isAdmin ? `<div class="book-actions">
               <button class="btn btn-secondary btn-small" onclick="openEdit(books.find(b=>b.id===${book.id}))">Edit</button>
               <button class="btn btn-danger btn-small" onclick="deleteBook(${book.id})">Delete</button>
