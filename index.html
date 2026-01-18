@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V2.12 - Mobile: review clears book cover height -->
+  <!-- V2.13 - Mobile: float-based layout ensures review clears cover -->
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -250,29 +250,10 @@
       .form-row { grid-template-columns: 1fr; }
       .stats { grid-template-columns: repeat(2, 1fr); }
       .book-actions { flex-direction: column; }
-      .book-review { 
-        font-size: 1rem;
-        margin-top: 12px;
-        margin-left: -71px; /* Align with cover: -(cover 55px + gap 16px) */
-        padding-left: 24px;
-      }
       
-      /* Ensure review starts below cover by adding spacer when content is short */
-      .book-card .book-info::before {
-        content: '';
-        display: block;
-        float: left;
-        height: 85px; /* Cover height */
-        width: 0;
-        margin-left: -71px; /* Same as review offset */
-      }
-      .book-card .book-info .book-review {
-        clear: left;
-      }
-      
-      /* Mobile book card layout - rank centered at top of card */
+      /* Mobile book card layout */
       .book-card { 
-        flex-wrap: wrap; 
+        display: block; /* Change from flex to block for simpler layout */
         position: relative; 
         padding-top: 64px;
       }
@@ -283,23 +264,29 @@
         right: 0;
         width: 100%;
         text-align: center;
-        margin-right: 0;
-        margin-bottom: 12px;
         font-size: 2.2rem;
       }
       .book-card .book-cover { 
         width: 55px; 
         height: 85px; 
-        margin-top: 0;
+        float: left;
+        margin-right: 16px;
+        margin-bottom: 12px;
       }
       .book-card .book-info { 
-        flex: 1;
-        min-width: calc(100% - 80px);
-        margin-top: 0;
+        overflow: hidden; /* Contain floated cover */
+      }
+      .book-card .book-info .book-review {
+        font-size: 1rem;
+        margin-top: 12px;
+        clear: both; /* Start below the floated cover */
+        margin-left: 0;
+        padding-left: 24px;
       }
       .book-card .rating-circle { 
-        order: 20;
+        display: block;
         margin: 12px auto 0;
+        clear: both;
       }
       .rating-legend { flex-direction: column; }
     }
