@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V2.7 - Fixed desktop review text alignment with title, tighter vertical spacing -->
+  <!-- V2.8 - Review text aligned with title (margin-left: 161px) -->
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -99,7 +99,7 @@
     .book-author { color: #888; font-size: 0.85rem; margin-bottom: 4px; }
     .book-date-read { color: #999; font-size: 0.85rem; margin-bottom: 0; }
     
-    /* V2.7 Review Styling - Text aligned with title on desktop */
+    /* V2.8 Review Styling - Text aligned with title on desktop */
     .book-review {
       font-family: 'Libre Baskerville', serif;
       font-size: 1.05rem;
@@ -108,8 +108,8 @@
       margin-top: 0;
       position: relative;
       padding-left: 24px;
-      margin-left: 137px; /* Align text with title: rank(56) + gap(16) + cover(65) + coverMargin(8) + gap(16) - padding(24) = 137 */
-      flex-basis: calc(100% - 137px);
+      margin-left: 161px; /* Align quote mark with cover edge, text with title */
+      flex-basis: calc(100% - 161px);
       order: 10; /* Push to end of flex container */
     }
     .book-review::before {
