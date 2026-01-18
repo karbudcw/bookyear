@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V2.9 - Review inside book-info for consistent vertical spacing -->
+  <!-- V2.11 - Mobile: review aligned with cover, rating circle fixed size -->
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -99,7 +99,7 @@
     .book-author { color: #888; font-size: 0.85rem; margin-bottom: 4px; }
     .book-date-read { color: #999; font-size: 0.85rem; margin-bottom: 0; }
     
-    /* V2.9 Review Styling - Inside book-info for consistent vertical spacing */
+    /* V2.10 Review Styling - Inside book-info, text aligns with title naturally */
     .book-review {
       font-family: 'Libre Baskerville', serif;
       font-size: 1.05rem;
@@ -108,7 +108,6 @@
       margin-top: 10px;
       position: relative;
       padding-left: 24px;
-      margin-left: -24px; /* Pull left so quote mark hangs in margin */
     }
     .book-review::before {
       content: '"';
@@ -253,8 +252,9 @@
       .book-actions { flex-direction: column; }
       .book-review { 
         font-size: 1rem;
-        margin-left: -24px;
         margin-top: 12px;
+        margin-left: -71px; /* Align with cover: -(cover 55px + gap 16px) */
+        padding-left: 24px;
       }
       
       /* Mobile book card layout - rank centered at top of card */
@@ -286,15 +286,7 @@
       }
       .book-card .rating-circle { 
         order: 20;
-        flex-basis: 100%;
-        display: flex;
-        justify-content: center;
-        margin: 12px 0 0 0;
-      }
-      .book-card .rating-circle > div,
-      .book-card > .rating-circle {
-        width: 44px;
-        height: 44px;
+        margin: 12px auto 0;
       }
       .rating-legend { flex-direction: column; }
     }
