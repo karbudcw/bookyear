@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V2.17 - Mobile: increased review top margin -->
+  <!-- V2.18 - Mobile: review clears cover with min-height and margin-top auto -->
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -283,6 +283,13 @@
         flex: 1;
         min-width: calc(100% - 80px);
         margin-top: 0;
+        min-height: 85px; /* At least as tall as cover */
+        display: flex;
+        flex-direction: column;
+      }
+      .book-card .book-info .book-review {
+        margin-top: auto; /* Push to bottom of min-height container */
+        padding-top: 20px; /* Then add spacing above */
       }
       .book-card .rating-circle { 
         margin: 12px auto 0;
