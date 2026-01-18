@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V2.11 - Mobile: review aligned with cover, rating circle fixed size -->
+  <!-- V2.12 - Mobile: review clears book cover height -->
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -255,6 +255,19 @@
         margin-top: 12px;
         margin-left: -71px; /* Align with cover: -(cover 55px + gap 16px) */
         padding-left: 24px;
+      }
+      
+      /* Ensure review starts below cover by adding spacer when content is short */
+      .book-card .book-info::before {
+        content: '';
+        display: block;
+        float: left;
+        height: 85px; /* Cover height */
+        width: 0;
+        margin-left: -71px; /* Same as review offset */
+      }
+      .book-card .book-info .book-review {
+        clear: left;
       }
       
       /* Mobile book card layout - rank centered at top of card */
