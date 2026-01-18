@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V2.13 - Mobile: float-based layout ensures review clears cover -->
+  <!-- V2.14 - Mobile: review aligned with cover, rating circle centered -->
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -280,13 +280,18 @@
         font-size: 1rem;
         margin-top: 12px;
         clear: both; /* Start below the floated cover */
-        margin-left: 0;
+        margin-left: -71px; /* Align with cover left edge: -(cover 55px + margin 16px) */
         padding-left: 24px;
+        padding-right: 0;
       }
       .book-card .rating-circle { 
-        display: block;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         margin: 12px auto 0;
         clear: both;
+        width: 44px;
+        height: 44px;
       }
       .rating-legend { flex-direction: column; }
     }
