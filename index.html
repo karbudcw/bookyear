@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V2.20 - Mobile: float clearance ensures review clears cover height -->
+  <!-- V2.9 - Restored: Review inside book-info, simple mobile styles -->
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -252,10 +252,7 @@
       .book-actions { flex-direction: column; }
       .book-review { 
         font-size: 1rem;
-        margin-top: 20px;
-        margin-left: calc(-1 * (55px + 16px)); /* Pull left to align with cover: -(cover width + gap) */
-        width: calc(100% + 55px + 16px); /* Expand width to compensate */
-        clear: left; /* Clear the floated spacer */
+        margin-top: 12px;
       }
       
       /* Mobile book card layout - rank centered at top of card */
@@ -284,15 +281,6 @@
         flex: 1;
         min-width: calc(100% - 80px);
         margin-top: 0;
-        position: relative;
-      }
-      /* Invisible float that forces review to clear cover height */
-      .book-card .book-info::before {
-        content: '';
-        float: left;
-        height: 85px; /* Match cover height */
-        width: 1px;
-        margin-left: -1px;
       }
       .book-card .rating-circle { 
         margin: 12px auto 0;
