@@ -291,7 +291,7 @@
       }
       .book-card-grid {
         display: flex;
-        flex-direction: column;
+        flex-wrap: wrap;
         position: relative;
       }
       .book-card-grid .book-rank { 
@@ -306,30 +306,32 @@
       .book-card-grid .book-cover { 
         width: 55px; 
         height: 85px; 
-        float: left;
         margin-right: 16px;
         margin-bottom: 12px;
+        order: 1;
       }
       .book-card-grid .book-info { 
-        overflow: hidden;
-        order: 1;
+        flex: 1;
+        min-width: calc(100% - 75px);
+        order: 2;
       }
       .book-card-grid .book-title {
         margin-top: -3px;
       }
       .book-card-grid .book-review {
-        clear: both;
+        width: 100%;
         margin-top: 12px;
-        order: 2;
-      }
-      .book-card-grid .rating-circle { 
-        clear: both;
-        margin: 16px auto;
         order: 3;
       }
-      .book-card-grid .book-actions {
-        margin-top: 8px;
+      .book-card-grid .rating-circle { 
+        margin: 16px auto;
         order: 4;
+        width: 44px;
+      }
+      .book-card-grid .book-actions {
+        width: 100%;
+        margin-top: 8px;
+        order: 5;
       }
       .rating-legend { flex-direction: column; }
     }
