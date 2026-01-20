@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
-  <!-- V3.3 - Desktop: centered rank (24px gaps), Mobile: more breathing room -->
+  <!-- V3.4 - Added pagination (10 books per page) -->
   
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -215,6 +215,16 @@
     /* Last Update tooltip */
     .stat-last-update { position: relative; cursor: help; }
     
+    /* Pagination */
+    .pagination { display: flex; justify-content: center; align-items: center; gap: 16px; margin: 32px 0; }
+    .pagination-btn { background: none; border: 1px solid #ddd; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px; font-family: inherit; transition: all 0.2s; color: #2D3E50; }
+    .pagination-btn:hover:not(.disabled) { border-color: #2D3E50; background: #f5f5f5; }
+    .pagination-btn.disabled { color: #ccc; cursor: not-allowed; }
+    .pagination-numbers { display: flex; gap: 4px; }
+    .pagination-num { background: none; border: 1px solid transparent; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 14px; font-family: inherit; transition: all 0.2s; color: #666; }
+    .pagination-num:hover:not(.active) { background: #f5f5f5; }
+    .pagination-num.active { background: #2D3E50; color: #fff; font-weight: 500; }
+    
     @media (max-width: 600px) {
       /* Mobile header layout - Option 3: icon on top, text stacked below, dropdown nav */
       header {
@@ -305,7 +315,7 @@
         right: 0;
         width: 100%;
         text-align: center;
-        font-size: 2.2rem;
+        font-size: 2.5rem;
       }
       .book-card-grid .book-cover { 
         grid-column: 1;
@@ -336,6 +346,11 @@
         grid-row: 4;
       }
       .rating-legend { flex-direction: column; }
+      
+      /* Mobile pagination */
+      .pagination { gap: 8px; flex-wrap: wrap; }
+      .pagination-btn { padding: 8px 12px; font-size: 13px; }
+      .pagination-num { width: 32px; height: 32px; font-size: 13px; }
     }
   </style>
 </head>
@@ -346,6 +361,8 @@
     let books = [];
     let view = 'list';
     let yearFilter = 'all-time';
+    let currentPage = 1;
+    const BOOKS_PER_PAGE = 10;
     let editingBook = null;
     let form = { title: '', author: '', year: '', cover: '', rating: null, review: '', dateRead: '', isbn: '', pageCount: null, format: 'physical' };
     let isbnInput = '';
@@ -539,7 +556,8 @@
       resetForm();
     }
     function goBack() { view = 'list'; resetForm(); render(); }
-    function setYear(y) { yearFilter = y; dropdownOpen = false; render(); }
+    function setYear(y) { yearFilter = y; currentPage = 1; dropdownOpen = false; render(); }
+    function setPage(p) { currentPage = p; window.scrollTo({ top: 0, behavior: 'smooth' }); render(); }
     function toggleDropdown() { dropdownOpen = !dropdownOpen; render(); }
     function setFormat(f) {
       // Update format without re-rendering to preserve form data
@@ -707,7 +725,14 @@
       if (filtered.length === 0) {
         html += '<div class="empty-state">No books found.</div>';
       } else {
-        filtered.forEach((book, i) => {
+        // Pagination calculations
+        const totalPages = Math.ceil(filtered.length / BOOKS_PER_PAGE);
+        const startIndex = (currentPage - 1) * BOOKS_PER_PAGE;
+        const endIndex = startIndex + BOOKS_PER_PAGE;
+        const paginatedBooks = filtered.slice(startIndex, endIndex);
+        
+        paginatedBooks.forEach((book, i) => {
+          const globalIndex = startIndex + i; // For correct ranking number
           const titleHtml = book.amazonUrl 
             ? `<a href="${book.amazonUrl}" target="_blank" rel="noopener" class="book-title-link">${book.title}</a>`
             : book.title;
@@ -719,7 +744,7 @@
           const reviewHtml = book.review ? `<div class="book-review">${renderReview(book.review, true)}</div>` : '';
           html += `<div class="card book-card">
             <div class="book-card-grid">
-              <div class="book-rank"><span class="hash">#</span><span class="num">${i + 1}</span></div>
+              <div class="book-rank"><span class="hash">#</span><span class="num">${globalIndex + 1}</span></div>
               <div class="book-cover">${coverHtml}</div>
               <div class="book-info">
                 <div class="book-title">${titleHtml}</div>
@@ -735,6 +760,38 @@
             </div>
           </div>`;
         });
+        
+        // Pagination controls
+        if (totalPages > 1) {
+          html += `<div class="pagination">`;
+          
+          // Previous button
+          if (currentPage > 1) {
+            html += `<button class="pagination-btn" onclick="setPage(${currentPage - 1})">← Prev</button>`;
+          } else {
+            html += `<button class="pagination-btn disabled" disabled>← Prev</button>`;
+          }
+          
+          // Page numbers
+          html += `<div class="pagination-numbers">`;
+          for (let p = 1; p <= totalPages; p++) {
+            if (p === currentPage) {
+              html += `<button class="pagination-num active">${p}</button>`;
+            } else {
+              html += `<button class="pagination-num" onclick="setPage(${p})">${p}</button>`;
+            }
+          }
+          html += `</div>`;
+          
+          // Next button
+          if (currentPage < totalPages) {
+            html += `<button class="pagination-btn" onclick="setPage(${currentPage + 1})">Next →</button>`;
+          } else {
+            html += `<button class="pagination-btn disabled" disabled>Next →</button>`;
+          }
+          
+          html += `</div>`;
+        }
       }
       html += '</div>';
       
