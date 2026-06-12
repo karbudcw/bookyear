@@ -1,4 +1,4 @@
-const ADMIN_KEY = 'CV!vxUCQvr*p47xNX@ZB';
+const ADMIN_KEY = 'books';
 
 export async function onRequest(context) {
   const { request, env } = context;
