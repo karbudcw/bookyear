@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pages Turned</title>
+  <!-- V3.5 - Ink-and-paper rating palette, CSS variables, skeleton loading,
+       mobile header/card compaction, focus-visible styles, session-key admin auth,
+       absolute og:image, pagination pills, dropdown outside-click close.
+       Baseline: refactored V3.4. -->
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -13,26 +17,47 @@
   <!-- Open Graph / Social Media -->
   <meta property="og:title" content="Pages Turned">
   <meta property="og:description" content="The TL;DR of book reviews">
-  <meta property="og:image" content="icon.png">
+  <meta property="og:image" content="https://pagesturned.com/icon.png">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Pages Turned">
   <meta name="twitter:description" content="The TL;DR of book reviews">
-  <meta name="twitter:image" content="icon.png">
+  <meta name="twitter:image" content="https://pagesturned.com/icon.png">
 
   <!-- General Meta -->
   <meta name="description" content="The TL;DR of book reviews. One-sentence reviews with a 1-100 rating system.">
   <meta name="theme-color" content="#2D3E50">
 
-  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&family=Architects+Daughter&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
+    /* ── Design Tokens ─────────────────────────────────── */
+    :root {
+      --ink: #2D3E50;
+      --ink-soft: #3d4e60;
+      --paper: #faf9f7;
+      --line: #e8e6e3;
+      --text-soft: #666;
+      --text-muted: #888;
+      --shadow-card: 0 2px 8px rgba(45, 62, 80, 0.07);
+      --shadow-card-hover: 0 4px 14px rgba(45, 62, 80, 0.10);
+      --shadow-pop: 0 6px 16px rgba(45, 62, 80, 0.14);
+    }
+
     /* ── Reset & Base ─────────────────────────────────── */
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    button:focus-visible, a:focus-visible, input:focus-visible,
+    select:focus-visible, textarea:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 2px;
+    }
+
     body {
       font-family: 'Inter', system-ui, sans-serif;
-      background: #faf9f7;
-      color: #2D3E50;
+      background: var(--paper);
+      color: var(--ink);
       line-height: 1.6;
     }
 
@@ -88,7 +113,7 @@
     }
 
     .tagline {
-      color: #555;
+      color: var(--text-soft);
       font-size: 1.0rem;
     }
 
@@ -124,7 +149,7 @@
       position: absolute;
       background: white;
       min-width: 120px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      box-shadow: var(--shadow-pop);
       border-radius: 8px;
       z-index: 1000;
       top: 100%;
@@ -206,14 +231,13 @@
       padding: 24px;
       margin-top: 20px;
       margin-bottom: 36px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      box-shadow: var(--shadow-card);
       max-width: 760px;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      transition: box-shadow 0.3s ease;
     }
 
     .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 24px rgba(45, 62, 80, 0.15);
+      box-shadow: var(--shadow-card-hover);
     }
 
     /* ── Book Card Grid (Desktop) ─────────────────────── */
@@ -231,8 +255,9 @@
       grid-row: 1;
       justify-self: center;
       line-height: 1;
-      font-family: 'Architects Daughter', cursive;
-      font-size: 1.8rem;
+      font-family: 'Libre Baskerville', serif;
+      font-style: italic;
+      font-size: 1.6rem;
     }
 
     .book-card-grid .book-cover  { grid-column: 2; grid-row: 1; }
@@ -311,22 +336,6 @@
       color: #fff;
       flex-shrink: 0;
       position: relative;
-      cursor: help;
-    }
-
-    .rating-circle:hover::after {
-      content: '1-100 scale';
-      position: absolute;
-      bottom: -32px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #2D3E50;
-      color: white;
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-size: 12px;
-      white-space: nowrap;
-      z-index: 100;
     }
 
     .rating-unrated { background: #ccc; font-size: 11px; }
@@ -342,7 +351,7 @@
       border: 1px solid #e8e6e3;
       border-radius: 8px;
       padding: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      box-shadow: var(--shadow-card);
     }
 
     .stat-number {
@@ -411,6 +420,36 @@
     .back-link:hover { color: #2D3E50; }
     .empty-state { text-align: center; padding: 60px 20px; color: #888; }
     .loading { text-align: center; padding: 40px; color: #888; }
+
+    /* ── Skeleton Loading ──────────────────────────────── */
+    .skeleton {
+      background: #edeae6;
+      border-radius: 6px;
+      position: relative;
+      overflow: hidden;
+    }
+    .skeleton::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.65), transparent);
+      animation: shimmer 1.4s infinite;
+    }
+    @keyframes shimmer { 100% { transform: translateX(100%); } }
+    @media (prefers-reduced-motion: reduce) {
+      .skeleton::after { animation: none; }
+      .card { transition: none; }
+    }
+    .skeleton-stats { height: 92px; margin: 8px 0 32px; border-radius: 8px; }
+    .skeleton-row { display: flex; gap: 24px; align-items: flex-start; }
+    .skeleton-cover { width: 65px; height: 100px; flex-shrink: 0; }
+    .skeleton-lines { flex: 1; display: flex; flex-direction: column; gap: 10px; padding-top: 4px; }
+    .skeleton-line { height: 14px; }
+    .skeleton-line.w60 { width: 60%; }
+    .skeleton-line.w40 { width: 40%; }
+    .skeleton-line.w85 { width: 85%; }
+    .skeleton-circle { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; }
     .error { color: #c44; font-size: 13px; margin-top: 8px; }
 
     /* ── Distribution Chart ────────────────────────────── */
@@ -481,12 +520,12 @@
       background: none;
       border: 1px solid #ddd;
       padding: 8px 16px;
-      border-radius: 6px;
+      border-radius: 20px;
       cursor: pointer;
       font-size: 14px;
       font-family: inherit;
       transition: all 0.2s;
-      color: #2D3E50;
+      color: var(--ink);
     }
 
     .pagination-btn:hover:not(.disabled) { border-color: #2D3E50; background: #f5f5f5; }
@@ -537,16 +576,16 @@
         gap: 4px;
       }
 
-      .logo-icon  { height: 120px; }
+      .logo-icon  { height: 85px; }
       .brand-text { text-align: center; }
-      .brand-name { font-size: 2.5rem; margin-bottom: 8px; }
-      .tagline    { font-size: 1.25rem; }
+      .brand-name { font-size: 2rem; margin-bottom: 4px; }
+      .tagline    { font-size: 1.05rem; }
 
       nav.desktop-nav { display: none; }
 
       .mobile-nav {
         display: flex !important;
-        margin-top: 20px;
+        margin-top: 14px;
       }
 
       .mobile-nav-btn {
@@ -580,27 +619,27 @@
       .card.book-card {
         max-width: 100%;
         padding: 28px;
-        padding-top: 84px;
+        padding-top: 72px;
         margin-left: 8px;
         margin-right: 8px;
       }
 
       .book-card-grid {
         display: grid;
-        grid-template-columns: 55px 1fr;
-        grid-template-rows: auto auto auto auto;
+        grid-template-columns: 55px 1fr 44px;
+        grid-template-rows: auto auto auto;
         gap: 12px 16px;
         position: relative;
       }
 
       .book-card-grid .book-rank {
         position: absolute;
-        top: -60px;
+        top: -52px;
         left: 0;
         right: 0;
         width: 100%;
         text-align: center;
-        font-size: 2.5rem;
+        font-size: 2rem;
         justify-self: unset;
       }
 
@@ -621,31 +660,30 @@
       }
 
       .book-card-grid .rating-circle {
-        grid-column: 1 / -1;
-        grid-row: 3;
-        justify-self: center;
-        margin-top: 12px;
+        grid-column: 3;
+        grid-row: 1;
+        justify-self: end;
+        margin-top: 0;
       }
 
       .book-card-grid .book-actions {
         grid-column: 1 / -1;
-        grid-row: 4;
+        grid-row: 3;
       }
 
       .pagination { gap: 8px; flex-wrap: wrap; }
-      .pagination-btn { padding: 8px 12px; font-size: 13px; }
-      .pagination-num { width: 32px; height: 32px; font-size: 13px; }
+      .pagination-btn { padding: 10px 14px; font-size: 13px; }
+      .pagination-num { width: 40px; height: 40px; font-size: 13px; }
     }
   </style>
 </head>
 <body>
-  <div id="app"><div class="loading">Loading...</div></div>
+  <div id="app"><div class="container"><div class="skeleton skeleton-stats"></div><div class="card"><div class="skeleton-row"><div class="skeleton skeleton-cover"></div><div class="skeleton-lines"><div class="skeleton skeleton-line w60"></div><div class="skeleton skeleton-line w40"></div><div class="skeleton skeleton-line w85"></div></div><div class="skeleton skeleton-circle"></div></div></div><div class="card"><div class="skeleton-row"><div class="skeleton skeleton-cover"></div><div class="skeleton-lines"><div class="skeleton skeleton-line w60"></div><div class="skeleton skeleton-line w40"></div><div class="skeleton skeleton-line w85"></div></div><div class="skeleton skeleton-circle"></div></div></div><div class="card"><div class="skeleton-row"><div class="skeleton skeleton-cover"></div><div class="skeleton-lines"><div class="skeleton skeleton-line w60"></div><div class="skeleton skeleton-line w40"></div><div class="skeleton skeleton-line w85"></div></div><div class="skeleton skeleton-circle"></div></div></div></div></div>
   <script>
     'use strict';
 
     /* ── Constants ─────────────────────────────────────── */
     const BOOKS_PER_PAGE = 10;
-    const ADMIN_KEY = 'CV!vxUCQvr*p47xNX@ZB';
 
     const EMOJI = {
       trophy:     '\u{1F3C6}',
@@ -658,21 +696,23 @@
       downArrow:  '\u25BC'
     };
 
+    /* Ink-and-paper rating ramp: forest greens, ochre, sienna, brick, oxblood.
+       All values hold white text at 14px/700. */
     const RATING_COLORS = [
-      [95, '#1B5E20'], [90, '#2E7D32'], [85, '#388E3C'], [80, '#43A047'],
-      [75, '#FBC02D'], [70, '#F9A825'],
-      [65, '#FB8C00'], [60, '#EF6C00'],
-      [50, '#EF5350'], [40, '#F44336'], [30, '#E53935'], [20, '#D32F2F'], [10, '#C62828'],
-      [0,  '#B71C1C']
+      [95, '#1E4632'], [90, '#28583E'], [85, '#33694A'], [80, '#3F7A56'],
+      [75, '#976E14'], [70, '#825D10'],
+      [65, '#A8542C'], [60, '#8F4523'],
+      [50, '#A93B33'], [40, '#97312B'], [30, '#832A24'], [20, '#6F231E'], [10, '#5C1C18'],
+      [0,  '#4A1512']
     ];
 
     const DISTRIBUTION_BUCKETS = [
-      { label: '90-100', min: 90, max: 100, color: '#1B5E20' },
-      { label: '80-89',  min: 80, max: 89,  color: '#43A047' },
-      { label: '70-79',  min: 70, max: 79,  color: '#FBC02D' },
-      { label: '60-69',  min: 60, max: 69,  color: '#EF6C00' },
-      { label: '50-59',  min: 50, max: 59,  color: '#EF5350' },
-      { label: '0-49',   min: 0,  max: 49,  color: '#B71C1C' }
+      { label: '90-100', min: 90, max: 100, color: '#28583E' },
+      { label: '80-89',  min: 80, max: 89,  color: '#3F7A56' },
+      { label: '70-79',  min: 70, max: 79,  color: '#976E14' },
+      { label: '60-69',  min: 60, max: 69,  color: '#8F4523' },
+      { label: '50-59',  min: 50, max: 59,  color: '#A93B33' },
+      { label: '0-49',   min: 0,  max: 49,  color: '#5C1C18' }
     ];
 
     const FORMAT_EMOJI = {
@@ -682,6 +722,8 @@
     };
 
     const MONTH_ABBREV = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    const SKELETON_HTML = `<div class="container"><div class="skeleton skeleton-stats"></div><div class="card"><div class="skeleton-row"><div class="skeleton skeleton-cover"></div><div class="skeleton-lines"><div class="skeleton skeleton-line w60"></div><div class="skeleton skeleton-line w40"></div><div class="skeleton skeleton-line w85"></div></div><div class="skeleton skeleton-circle"></div></div></div><div class="card"><div class="skeleton-row"><div class="skeleton skeleton-cover"></div><div class="skeleton-lines"><div class="skeleton skeleton-line w60"></div><div class="skeleton skeleton-line w40"></div><div class="skeleton skeleton-line w85"></div></div><div class="skeleton skeleton-circle"></div></div></div><div class="card"><div class="skeleton-row"><div class="skeleton skeleton-cover"></div><div class="skeleton-lines"><div class="skeleton skeleton-line w60"></div><div class="skeleton skeleton-line w40"></div><div class="skeleton skeleton-line w85"></div></div><div class="skeleton skeleton-circle"></div></div></div></div>`;
 
     /* ── State ─────────────────────────────────────────── */
     let books = [];
@@ -699,8 +741,13 @@
 
     /* ── Init ──────────────────────────────────────────── */
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('admin') === ADMIN_KEY) {
-      isAdmin = true;
+    let adminKey = sessionStorage.getItem('pt_admin_key') || '';
+    if (urlParams.get('admin') !== null) {
+      if (!adminKey) {
+        adminKey = window.prompt('Enter admin key:') || '';
+        if (adminKey) sessionStorage.setItem('pt_admin_key', adminKey);
+      }
+      isAdmin = Boolean(adminKey);
     }
 
     /* ── Helpers ───────────────────────────────────────── */
@@ -724,7 +771,7 @@
       for (const [threshold, color] of RATING_COLORS) {
         if (r >= threshold) return color;
       }
-      return '#B71C1C';
+      return '#4A1512';
     }
 
     function getYearFromDate(d) {
@@ -772,14 +819,18 @@
 
     async function saveBooks() {
       try {
-        await fetch('/api/books', {
+        const res = await fetch('/api/books', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${ADMIN_KEY}`
+            'Authorization': `Bearer ${adminKey}`
           },
           body: JSON.stringify({ books })
         });
+        if (res.status === 401) {
+          sessionStorage.removeItem('pt_admin_key');
+          alert('Admin key rejected. Reload the page and enter the correct key.');
+        }
       } catch (e) {
         console.error('Save failed:', e);
       }
@@ -919,6 +970,13 @@
 
     function toggleDropdown() { dropdownOpen = !dropdownOpen; render(); }
 
+    document.addEventListener('click', (e) => {
+      if (dropdownOpen && !e.target.closest('.dropdown')) {
+        dropdownOpen = false;
+        render();
+      }
+    });
+
     function setFormat(f, evt) {
       form.format = f;
       // Update button styling directly without re-render to preserve form data
@@ -1056,7 +1114,7 @@
 
     /* ── Render: Book List ─────────────────────────────── */
     function renderList() {
-      if (loading) return '<div class="loading">Loading...</div>';
+      if (loading) return SKELETON_HTML;
 
       const currentYear = new Date().getFullYear();
       const filtered = filterBooks();
