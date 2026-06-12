@@ -8,9 +8,26 @@
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <meta name="theme-color" content="#2D3E50">
-  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&family=Architects+Daughter&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --ink: #2D3E50;
+      --ink-soft: #3d4e60;
+      --paper: #faf9f7;
+      --line: #e8e6e3;
+      --text-soft: #666;
+      --text-muted: #888;
+      --shadow-card: 0 2px 8px rgba(45, 62, 80, 0.07);
+      --shadow-card-hover: 0 4px 14px rgba(45, 62, 80, 0.10);
+      --shadow-pop: 0 6px 16px rgba(45, 62, 80, 0.14);
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    button:focus-visible, a:focus-visible, input:focus-visible,
+    select:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
     body { font-family: 'Inter', system-ui, sans-serif; background: #faf9f7; color: #2D3E50; line-height: 1.6; min-height: 100vh; }
 
     /* Header */
@@ -58,7 +75,7 @@
     /* Spectrum container */
     .spectrum-wrap {
       background: #fff; border: 1px solid #e8e6e3; border-radius: 10px;
-      padding: 32px 28px 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      padding: 32px 28px 20px; box-shadow: var(--shadow-card);
       margin-bottom: 32px; position: relative;
     }
 
@@ -66,7 +83,7 @@
     .axis { position: relative; height: 48px; margin: 0 24px; }
     .axis-line {
       position: absolute; top: 23px; left: 0; right: 0; height: 2px;
-      background: linear-gradient(to right, #B71C1C, #E53935, #EF5350, #EF6C00, #FB8C00, #F9A825, #FBC02D, #43A047, #388E3C, #2E7D32, #1B5E20);
+      background: linear-gradient(to right, #4A1512, #5C1C18, #6F231E, #832A24, #97312B, #A93B33, #8F4523, #A8542C, #825D10, #976E14, #3F7A56, #33694A, #28583E, #1E4632);
       border-radius: 1px;
     }
     .axis-ticks { position: absolute; top: 0; left: 0; right: 0; height: 100%; }
@@ -130,7 +147,7 @@
     /* Selected book detail panel */
     .detail-panel {
       background: #fff; border: 1px solid #e8e6e3; border-radius: 10px;
-      padding: 28px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      padding: 28px; box-shadow: var(--shadow-card);
       margin-bottom: 32px; display: none;
     }
     .detail-panel.visible { display: block; }
@@ -140,7 +157,7 @@
     .detail-info { flex: 1; }
     .detail-title { font-family: 'Libre Baskerville', serif; font-size: 1.15rem; font-weight: 700; color: #2D3E50; }
     .detail-author { color: #888; font-size: 0.85rem; margin-top: 2px; }
-    .detail-review { font-family: 'Libre Baskerville', serif; font-size: 0.95rem; color: #555; margin-top: 8px; line-height: 1.5; font-style: italic; }
+    .detail-review { font-family: 'Libre Baskerville', serif; font-size: 0.95rem; color: #555; margin-top: 8px; line-height: 1.5; }
     .detail-current { display: flex; align-items: center; gap: 12px; }
     .detail-rating-circle {
       width: 48px; height: 48px; border-radius: 50%;
@@ -160,7 +177,7 @@
     .slider-track-wrap { position: relative; margin: 0 8px 12px; }
     .slider-gradient {
       height: 8px; border-radius: 4px;
-      background: linear-gradient(to right, #B71C1C, #E53935, #EF5350, #EF6C00, #FB8C00, #F9A825, #FBC02D, #43A047, #388E3C, #2E7D32, #1B5E20);
+      background: linear-gradient(to right, #4A1512, #5C1C18, #6F231E, #832A24, #97312B, #A93B33, #8F4523, #A8542C, #825D10, #976E14, #3F7A56, #33694A, #28583E, #1E4632);
     }
     input[type="range"] {
       -webkit-appearance: none; appearance: none;
@@ -286,9 +303,13 @@
 </footer>
 
 <script>
-const adminPassword = 'CV!vxUCQvr*p47xNX@ZB';
 const urlParams = new URLSearchParams(window.location.search);
-const isAdmin = urlParams.get('admin') === adminPassword;
+let adminKey = sessionStorage.getItem('pt_admin_key') || '';
+if (urlParams.get('admin') !== null && !adminKey) {
+  adminKey = window.prompt('Enter admin key:') || '';
+  if (adminKey) sessionStorage.setItem('pt_admin_key', adminKey);
+}
+const isAdmin = urlParams.get('admin') !== null && Boolean(adminKey);
 
 let books = [];
 let filteredBooks = [];
@@ -299,20 +320,20 @@ let yearFilter = 'all';
 
 const getColor = r => {
   if (r === null) return '#ccc';
-  if (r >= 95) return '#1B5E20';
-  if (r >= 90) return '#2E7D32';
-  if (r >= 85) return '#388E3C';
-  if (r >= 80) return '#43A047';
-  if (r >= 75) return '#FBC02D';
-  if (r >= 70) return '#F9A825';
-  if (r >= 65) return '#FB8C00';
-  if (r >= 60) return '#EF6C00';
-  if (r >= 50) return '#EF5350';
-  if (r >= 40) return '#F44336';
-  if (r >= 30) return '#E53935';
-  if (r >= 20) return '#D32F2F';
-  if (r >= 10) return '#C62828';
-  return '#B71C1C';
+  if (r >= 95) return '#1E4632';
+  if (r >= 90) return '#28583E';
+  if (r >= 85) return '#33694A';
+  if (r >= 80) return '#3F7A56';
+  if (r >= 75) return '#976E14';
+  if (r >= 70) return '#825D10';
+  if (r >= 65) return '#A8542C';
+  if (r >= 60) return '#8F4523';
+  if (r >= 50) return '#A93B33';
+  if (r >= 40) return '#97312B';
+  if (r >= 30) return '#832A24';
+  if (r >= 20) return '#6F231E';
+  if (r >= 10) return '#5C1C18';
+  return '#4A1512';
 };
 
 const getYear = d => d ? d.slice(0, 4) : null;
@@ -403,14 +424,21 @@ async function saveRating() {
     const target = allBooks.find(b => b.id === selectedBook.id);
     if (target) target.rating = sliderValue;
 
-    await fetch('/api/books', {
+    const saveRes = await fetch('/api/books', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${adminPassword}`
+        'Authorization': `Bearer ${adminKey}`
       },
       body: JSON.stringify({ books: allBooks })
     });
+    if (saveRes.status === 401) {
+      sessionStorage.removeItem('pt_admin_key');
+      saving = false;
+      alert('Admin key rejected. Reload the page and enter the correct key.');
+      render();
+      return;
+    }
 
     selectedBook.rating = sliderValue;
     applyFilter();
