@@ -1,8 +1,6 @@
-const ADMIN_KEY = 'books';
-
 export async function onRequest(context) {
   const { request, env } = context;
-  
+
   const headers = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
@@ -23,8 +21,8 @@ export async function onRequest(context) {
     if (request.method === "POST") {
       const authHeader = request.headers.get("Authorization");
       const token = authHeader?.replace("Bearer ", "");
-      
-      if (token !== ADMIN_KEY) {
+
+      if (!env.ADMIN_KEY || token !== env.ADMIN_KEY) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
           status: 401,
           headers
